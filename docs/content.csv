@@ -173,3 +173,82 @@ cs0,9,99,w99,meta,3,reflect,Battleship was,,
 cs0,9,99,w99,meta,4,checkin,Check-in — battery: my mental battery is at about ____ % because,,
 cs0,9,99,w99,part1,5,p,This page has no vocabulary rows at all.,n=2,
 cs0,9,99,w99,part2,6,p,Stretch prompt.,n=2,
+csN-demo,1,1,w1,meta,0,topic,Page anatomy and the meta rows,,
+csN-demo,1,1,w1,meta,1,ican,I can name the four sections a row can belong to.,,
+csN-demo,1,1,w1,meta,2,ican,I can tell which meta row produced each part of page 1.,,
+csN-demo,1,1,w1,meta,3,reflect,Row D is authored — this page carries a meta row with type = reflect.,,
+csN-demo,1,1,w1,meta,4,checkin,Row E is authored too. Check-in: which part of page 1 would you change first?,,
+csN-demo,1,1,w1,vocab,5,vocab,"section — meta, vocab, part1 or part2",n=2,
+csN-demo,1,1,w1,vocab,6,vocab,type — what a row renders as,n=2,
+csN-demo,1,1,w1,vocab,7,vocab,"hint — per-row options, such as n=2 or w=230",n=2,
+csN-demo,1,1,w1,part1,8,label,The meta section builds page 1,,
+csN-demo,1,1,w1,part1,9,code,"type = topic     ->  the blue title bar
+type = ican      ->  strip rows B and C
+type = reflect   ->  strip row D
+type = checkin   ->  strip row E",,
+csN-demo,1,1,w1,part1,10,p,Look at page 1 and match each strip row to the meta row that made it. Row A is always the same pace check.,n=0,
+csN-demo,1,1,w1,part1,11,p,"Only the first two ican rows reach the strip. Every one of them reaches the unit cover — warm-up 4 has three, on purpose.",n=0,
+csN-demo,1,1,w1,part2,12,label,The other three sections,,
+csN-demo,1,1,w1,part2,13,p,"vocab fills the rest of page 1. part1 and part2 fill page 2, split by the grey PART 2 bar. A warm-up is always exactly two pages, however much you put in it.",n=0,
+csN-demo,1,1,w1,part2,14,p,reflect and checkin are both optional. Warm-up 2 leaves checkin out and warm-up 3 leaves reflect out — compare their strips with this one.,n=0,
+csN-demo,1,1,w1,part2,15,p,Which meta row would you edit to change this page's title?,n=1,
+csN-demo,1,2,w2,meta,0,topic,"Item types, and how much room to leave",,
+csN-demo,1,2,w2,meta,1,ican,I can pick a type for each piece of content.,,
+csN-demo,1,2,w2,meta,2,ican,I can set writing space with n=.,,
+csN-demo,1,2,w2,meta,3,reflect,Warm-up 1 covered the meta rows. This page is about part1 and part2.,,
+csN-demo,1,2,w2,vocab,4,vocab,"p — prompt text, then writing lines",n=1,
+csN-demo,1,2,w2,vocab,5,vocab,"label — a small bold heading, no lines",n=1,
+csN-demo,1,2,w2,vocab,6,vocab,code — a monospace box that keeps its line breaks,n=2,
+csN-demo,1,2,w2,vocab,7,vocab,lines — writing lines with nothing above them,n=3,
+csN-demo,1,2,w2,part1,8,label,type = p — the default,,
+csN-demo,1,2,w2,part1,9,code,"type    = p
+content = Write one thing you notice.
+hint    = n=2",,
+csN-demo,1,2,w2,part1,10,p,Write one thing you notice.,n=2,
+csN-demo,1,2,w2,part1,11,label,n = 0 — a prompt with no writing lines,,
+csN-demo,1,2,w2,part1,12,p,"Setup text, instructions, or a caption for a figure below it. This row uses n=0, which is why nothing follows it.",n=0,
+csN-demo,1,2,w2,part2,13,label,type = lines — room to write with no prompt above it,,
+csN-demo,1,2,w2,part2,14,lines,,n=3,
+csN-demo,1,2,w2,part2,15,label,type = code — every line break is kept,,
+csN-demo,1,2,w2,part2,16,code,"x = 100
+Circle(x, 200, 30)",,
+csN-demo,1,2,w2,part2,17,p,"The four vocab terms on page 1 use n=1, n=1, n=2 and n=3 — the hint works there too. This page has no checkin row, so strip row E fell back to the built-in list.",n=0,
+csN-demo,1,3,w3,meta,0,topic,Figures: the shapes,,
+csN-demo,1,3,w3,meta,1,ican,I can read a figure spec and picture what it draws.,,
+csN-demo,1,3,w3,meta,2,ican,I can set a figure's printed width with w=.,,
+csN-demo,1,3,w3,meta,3,checkin,Check-in — how much of your class time is students drawing on paper?,,
+csN-demo,1,3,w3,vocab,4,vocab,figure spec — the drawing instructions in the figure column,n=2,
+csN-demo,1,3,w3,vocab,5,vocab,"canvas — the coordinate square, 400 wide unless you say otherwise",n=2,
+csN-demo,1,3,w3,part1,6,label,"Six shapes, one spec",,
+csN-demo,1,3,w3,part1,7,code,"circle cx,cy,r
+rect   left,top,width,height
+oval   cx,cy,width,height
+star   cx,cy,r,points
+line   x1,y1,x2,y2
+dot    x,y",,
+csN-demo,1,3,w3,part1,8,figure,,w=235,"grid; circle 80,80,55; rect 180,30,180,100; oval 90,240,130,80; star 290,250,60,5; line 20,380,380,340; dot 200,170"
+csN-demo,1,3,w3,part1,9,p,Shapes are separated by semicolons and drawn in the order written. Match each shape above to its line in the table.,n=0,
+csN-demo,1,3,w3,part2,10,label,Blank graph paper — the spec used most,,
+csN-demo,1,3,w3,part2,11,code,"type   = figure
+figure = grid
+hint   = w=150",,
+csN-demo,1,3,w3,part2,12,figure,,w=150,grid
+csN-demo,1,3,w3,part2,13,p,"This page has no reflect row, so strip row D shows the generic look-back sentence instead.",n=0,
+csN-demo,1,4,w4,meta,0,topic,"Figure options, and a page with no vocabulary",,
+csN-demo,1,4,w4,meta,1,ican,I can fill a shape with a gray.,,
+csN-demo,1,4,w4,meta,2,ican,I can resize the canvas and turn the grid off.,,
+csN-demo,1,4,w4,meta,3,ican,I can see that this third I-can line reached the cover but not the strip.,,
+csN-demo,1,4,w4,meta,4,reflect,Warm-up 3 drew on the default grid. This page changes the grid itself.,,
+csN-demo,1,4,w4,meta,5,checkin,Check-in — the first option from these four pages you would use in a warm-up of your own:,,
+csN-demo,1,4,w4,part1,6,label,"Gray fills — a number from 0 to 255, or a CSS gray name",,
+csN-demo,1,4,w4,part1,7,code,"rect  30,60,80,80,0;           rect 130,60,80,80,105;
+rect 230,60,80,80,silver;      rect  30,180,80,80,lightgray;
+rect 130,180,80,80,gainsboro;  rect 230,180,80,80,white;
+rect 130,300,80,60",,
+csN-demo,1,4,w4,part1,8,figure,,w=200,"rect 30,60,80,80,0; rect 130,60,80,80,105; rect 230,60,80,80,silver; rect 30,180,80,80,lightgray; rect 130,180,80,80,gainsboro; rect 230,180,80,80,white; rect 130,300,80,60"
+csN-demo,1,4,w4,part1,9,p,"The last rectangle names no gray at all, so it is drawn as an outline. Lines and dots are always black.",n=0,
+csN-demo,1,4,w4,part2,10,label,canvas = and grid = off,,
+csN-demo,1,4,w4,part2,11,code,"figure = canvas=300; grid=off; circle 150,150,100,silver",,
+csN-demo,1,4,w4,part2,12,figure,,w=140,"canvas=300; grid=off; circle 150,150,100,silver"
+csN-demo,1,4,w4,part2,13,note,"This row's type is note, which no renderer knows. An unrecognised type falls back to a plain prompt, so a typo in the type column never breaks a page.",n=1,
+csN-demo,1,4,w4,part2,14,p,"Page 1 of this warm-up has no vocab rows, so no vocabulary heading was printed on it at all.",n=0,

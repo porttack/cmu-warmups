@@ -68,10 +68,16 @@ function writeBack(w){ // replace this page's rows with rows from edited warm-up
 }
 
 var TYPES=["p","code","figure","lines","label"];
+// Keep a type the editor does not know (vocab, or anything a teacher typed) in
+// the list, so editing its page does not silently rewrite it to "p".
+function typeOptions(t){
+  var list=(t&&TYPES.indexOf(t)<0)?TYPES.concat([t]):TYPES;
+  return list.map(function(x){return '<option '+(x===t?"selected":"")+'>'+L.esc(x)+'</option>';}).join("");
+}
 function itemEditor(sec,it,i){
   var isFig=it.type==="figure";
   return '<div class="item" data-sec="'+sec+'" data-i="'+i+'">'
-    +'<select class="it-type">'+TYPES.map(function(t){return '<option '+(t===it.type?"selected":"")+'>'+t+'</option>';}).join("")+'</select>'
+    +'<select class="it-type">'+typeOptions(it.type)+'</select>'
     +'<div><textarea class="it-content" rows="'+(/\n/.test(it.content||"")?3:2)+'">'+L.esc(it.content||"")+'</textarea>'
     +'<div class="figrow" style="'+(isFig?"":"display:none")+'"><input class="it-w" placeholder="w=230" value="'+L.esc(it.hint||"w=230")+'"><input class="it-spec" placeholder="figure spec e.g. circle 200,200,60,gray" value="'+L.esc(it.figure||"grid")+'"></div>'
     +'<input class="it-hint" placeholder="n=2 (writing lines)" value="'+(isFig?"":L.esc(it.hint||""))+'" style="'+(isFig?"display:none":"margin-top:4px")+'"></div>'

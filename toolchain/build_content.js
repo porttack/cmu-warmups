@@ -2,6 +2,7 @@
  * through the same model the whole pipeline uses (rowsFromWarmup + toCSV).
  * CS1 is CMU CS Academy's graphics course. Unit 1 = drawing on the
  * coordinate plane (figure-heavy). Unit 2 = color, variables, expressions.
+ * csN-demo is a showcase course — see the block below the CS1 warm-ups.
  */
 const fs = require("fs");
 const L = require("./wblib.js");
@@ -11,6 +12,8 @@ const code = (t) => ({ type: "code", content: t });
 const label = (t) => ({ type: "label", content: t });
 const fig = (spec, w) => ({ type: "figure", figure: spec, hint: "w=" + (w || 230) });
 const voc = (t) => ({ type: "vocab", content: t, hint: "n=2" });
+const vocN = (t, n) => ({ type: "vocab", content: t, hint: "n=" + n });
+const ln = (n) => ({ type: "lines", hint: "n=" + n });
 const W = (unit, no, topic, ican, vocab, part1, part2) =>
   ({ course: "cs1", unit: unit, no: no, page: "w" + no, topic, ican, vocab, part1, part2 });
 
@@ -150,8 +153,123 @@ const warmups = [
     part2: [ p("Stretch prompt.", 2) ] }
 ];
 
+/* ================== csN-demo — the feature showcase ==================
+ * A self-documenting course: each page's own text explains the rows that
+ * produced it, so a teacher can print one workbook and see every section,
+ * type, hint and figure option on paper. Not classroom content.
+ *
+ * The four pages are arranged so the optional bits are visible by their
+ * absence as well as their presence: w2 omits checkin (row E falls back to
+ * the built-in list), w3 omits reflect (row D falls back to the generic
+ * sentence), and w4 has no vocab rows and a third ican line.
+ *
+ * Delete this block and the concat below, then re-run, to drop the course.
+ */
+const DEMO = (no, topic, o) => Object.assign(
+  { course: "csN-demo", unit: 1, no: no, page: "w" + no, topic: topic,
+    ican: [], reflect: "", checkin: "", vocab: [], part1: [], part2: [] }, o);
+
+const SHAPES = "grid; circle 80,80,55; rect 180,30,180,100; oval 90,240,130,80; " +
+               "star 290,250,60,5; line 20,380,380,340; dot 200,170";
+const GRAYS = "rect 30,60,80,80,0; rect 130,60,80,80,105; " +
+              "rect 230,60,80,80,silver; rect 30,180,80,80,lightgray; " +
+              "rect 130,180,80,80,gainsboro; rect 230,180,80,80,white; " +
+              "rect 130,300,80,60";
+const NOGRID = "canvas=300; grid=off; circle 150,150,100,silver";
+
+const demoWarmups = [
+  DEMO(1, "Page anatomy and the meta rows", {
+    ican: ["I can name the four sections a row can belong to.",
+           "I can tell which meta row produced each part of page 1."],
+    reflect: "Row D is authored — this page carries a meta row with type = reflect.",
+    checkin: "Row E is authored too. Check-in: which part of page 1 would you change first?",
+    vocab: [ vocN("section — meta, vocab, part1 or part2", 2),
+             vocN("type — what a row renders as", 2),
+             vocN("hint — per-row options, such as n=2 or w=230", 2) ],
+    part1: [
+      label("The meta section builds page 1"),
+      code("type = topic     ->  the blue title bar\n" +
+           "type = ican      ->  strip rows B and C\n" +
+           "type = reflect   ->  strip row D\n" +
+           "type = checkin   ->  strip row E"),
+      p("Look at page 1 and match each strip row to the meta row that made it. Row A is always the same pace check.", 0),
+      p("Only the first two ican rows reach the strip. Every one of them reaches the unit cover — warm-up 4 has three, on purpose.", 0) ],
+    part2: [
+      label("The other three sections"),
+      p("vocab fills the rest of page 1. part1 and part2 fill page 2, split by the grey PART 2 bar. A warm-up is always exactly two pages, however much you put in it.", 0),
+      p("reflect and checkin are both optional. Warm-up 2 leaves checkin out and warm-up 3 leaves reflect out — compare their strips with this one.", 0),
+      p("Which meta row would you edit to change this page's title?", 1) ] }),
+
+  DEMO(2, "Item types, and how much room to leave", {
+    ican: ["I can pick a type for each piece of content.",
+           "I can set writing space with n=."],
+    reflect: "Warm-up 1 covered the meta rows. This page is about part1 and part2.",
+    // no checkin: row E falls back to the built-in list
+    vocab: [ vocN("p — prompt text, then writing lines", 1),
+             vocN("label — a small bold heading, no lines", 1),
+             vocN("code — a monospace box that keeps its line breaks", 2),
+             vocN("lines — writing lines with nothing above them", 3) ],
+    part1: [
+      label("type = p — the default"),
+      code("type    = p\ncontent = Write one thing you notice.\nhint    = n=2"),
+      p("Write one thing you notice.", 2),
+      label("n = 0 — a prompt with no writing lines"),
+      p("Setup text, instructions, or a caption for a figure below it. This row uses n=0, which is why nothing follows it.", 0) ],
+    part2: [
+      label("type = lines — room to write with no prompt above it"),
+      ln(3),
+      label("type = code — every line break is kept"),
+      code("x = 100\nCircle(x, 200, 30)"),
+      p("The four vocab terms on page 1 use n=1, n=1, n=2 and n=3 — the hint works there too. This page has no checkin row, so strip row E fell back to the built-in list.", 0) ] }),
+
+  DEMO(3, "Figures: the shapes", {
+    ican: ["I can read a figure spec and picture what it draws.",
+           "I can set a figure's printed width with w=."],
+    // no reflect: row D falls back to the generic look-back sentence
+    checkin: "Check-in — how much of your class time is students drawing on paper?",
+    vocab: [ vocN("figure spec — the drawing instructions in the figure column", 2),
+             vocN("canvas — the coordinate square, 400 wide unless you say otherwise", 2) ],
+    part1: [
+      label("Six shapes, one spec"),
+      code("circle cx,cy,r\n" +
+           "rect   left,top,width,height\n" +
+           "oval   cx,cy,width,height\n" +
+           "star   cx,cy,r,points\n" +
+           "line   x1,y1,x2,y2\n" +
+           "dot    x,y"),
+      fig(SHAPES, 235),
+      p("Shapes are separated by semicolons and drawn in the order written. Match each shape above to its line in the table.", 0) ],
+    part2: [
+      label("Blank graph paper — the spec used most"),
+      code("type   = figure\nfigure = grid\nhint   = w=150"),
+      fig("grid", 150),
+      p("This page has no reflect row, so strip row D shows the generic look-back sentence instead.", 0) ] }),
+
+  DEMO(4, "Figure options, and a page with no vocabulary", {
+    ican: ["I can fill a shape with a gray.",
+           "I can resize the canvas and turn the grid off.",
+           "I can see that this third I-can line reached the cover but not the strip."],
+    reflect: "Warm-up 3 drew on the default grid. This page changes the grid itself.",
+    checkin: "Check-in — the first option from these four pages you would use in a warm-up of your own:",
+    vocab: [],                       // no vocab rows: no heading on page 1, no gap
+    part1: [
+      label("Gray fills — a number from 0 to 255, or a CSS gray name"),
+      code("rect  30,60,80,80,0;           rect 130,60,80,80,105;\n" +
+           "rect 230,60,80,80,silver;      rect  30,180,80,80,lightgray;\n" +
+           "rect 130,180,80,80,gainsboro;  rect 230,180,80,80,white;\n" +
+           "rect 130,300,80,60"),
+      fig(GRAYS, 200),
+      p("The last rectangle names no gray at all, so it is drawn as an outline. Lines and dots are always black.", 0) ],
+    part2: [
+      label("canvas = and grid = off"),
+      code("figure = " + NOGRID),
+      fig(NOGRID, 140),
+      { type: "note", content: "This row's type is note, which no renderer knows. An unrecognised type falls back to a plain prompt, so a typo in the type column never breaks a page.", hint: "n=1" },
+      p("Page 1 of this warm-up has no vocab rows, so no vocabulary heading was printed on it at all.", 0) ] })
+];
+
 let rows = [];
-warmups.forEach((w) => { rows = rows.concat(L.rowsFromWarmup(w)); });
+warmups.concat(demoWarmups).forEach((w) => { rows = rows.concat(L.rowsFromWarmup(w)); });
 fs.writeFileSync("content.csv", L.toCSV(rows, L.COLS));
 
 // round-trip proof
@@ -159,7 +277,8 @@ const back = L.parseCSV(fs.readFileSync("content.csv", "utf8"));
 let same = back.length === rows.length;
 for (let i = 0; same && i < rows.length; i++)
   for (const c of L.COLS) if ((rows[i][c] || "") !== (back[i][c] || "")) { same = false; break; }
-console.log("content.csv rows:", rows.length, "| warm-ups:", warmups.length,
+console.log("content.csv rows:", rows.length,
+  "| warm-ups:", warmups.length + demoWarmups.length,
   "| round-trip identical:", same,
   "| U1 figures:", L.figureSpecs(rows.filter(r => r.unit == "1")).length,
   "| U2 figures:", L.figureSpecs(rows.filter(r => r.unit == "2")).length);
