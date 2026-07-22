@@ -46,7 +46,10 @@ pages unless you want minima's header landing in the middle of a printed workboo
 - **page** — the row-group key for one warm-up (`w1`, `w2`, …).
 - **section** — `meta` (topic and "I can…" skills), `vocab`, `part1`, `part2`.
 - **type** — `topic`, `ican`, `vocab`, `p` (prompt plus writing lines), `code`,
-  `figure`, `label`, `lines`.
+  `figure`, `label`, `lines`, `note` (bordered callout box), `error` (a Python
+  error message, shown shaded and monospace with an automatic "Python says:"
+  label). An unrecognised `type` value falls back to a plain prompt rather
+  than throwing.
 - **hint** — `n=N` writing lines for a prompt or vocab term; `w=NNN` display width
   for a figure.
 - **figure** — a figure spec; blank on non-figure rows.
@@ -62,11 +65,22 @@ links:
 `code`      ->  inline monospace
 ```
 
-Supported in `p`, `label`, and `vocab` rows. `code` rows are literal program
-text — markdown characters there are never processed, so asterisks and
-backticks in real code survive untouched. All three renderers (HTML,
-the JS Word builder, the Python Word builder) implement the same three forms,
-so a page looks the same whether it's printed, previewed, or exported.
+Supported in `p`, `label`, `vocab`, and `note` rows. `code` and `error` rows
+are literal text — markdown characters there are never processed, so
+asterisks and backticks in real code or error output survive untouched. All
+three renderers (HTML, the JS Word builder, the Python Word builder) implement
+the same three forms, so a page looks the same whether it's printed,
+previewed, or exported.
+
+### Multi-line content
+
+A `content` cell that needs more than one line — a multi-line `code` block or
+`error` message — uses a real, literal line break embedded inside the quoted
+CSV field, the same way spreadsheet software writes a cell with Alt+Enter/
+Option+Return. It is **not** the two-character escape sequence `\n`: the CSV
+parser (shared by all three renderers) only turns an embedded newline inside
+quotes into a line break, so a literal `\n` would print as the two characters
+`\` and `n` instead of breaking the line.
 
 Each warm-up renders as exactly **two pages**. Page 1 is the header, the START
 HERE strip (A pace check, B/C "I can…" self-checks, D reflection, E rotating

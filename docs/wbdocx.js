@@ -18,7 +18,7 @@
         : (typeof globalThis !== "undefined" ? globalThis.L : null);
 
   var THEME = {
-    accent: "1F3A5F", shade: "EEEEEE", line: "99AABB",
+    accent: "1F3A5F", shade: "EEEEEE", line: "99AABB", rule: "111111",
     codeBg: "F5F5F5", codeBorder: "888888", cover: "1F3A5F",
     base: 24, small: 18, strip: 20, title: 26,  // half-points
     lineTwips: 440                               // 22pt writing-line height
@@ -155,6 +155,15 @@
     lines.forEach(function (ln, i) { kids.push(run(ln, { mono: true, size: 22, break: i ? 1 : 0 })); });
     return para(kids, { before: 80, after: 80, shade: THEME.codeBg, allBorder: THEME.codeBorder });
   }
+  function errorBox(text) {
+    var lines = String(text == null ? "" : text).split("\n");
+    var kids = [run("Python says: ", { bold: true, mono: true, size: 22 })];
+    lines.forEach(function (ln, i) { kids.push(run(ln, { mono: true, size: 22, break: i ? 1 : 0 })); });
+    return para(kids, { before: 80, after: 80, shade: THEME.shade, allBorder: THEME.codeBorder });
+  }
+  function noteBox(text) {
+    return para(mdRuns(text, { size: THEME.base }), { before: 80, after: 80, allBorder: THEME.rule });
+  }
   function figurePara(spec, wpx, figMap) {
     var bytes = figBytes(figMap && figMap[spec]);
     if (!bytes) return para([run("[figure: " + spec + "]", { color: "888888", size: THEME.small })]);
@@ -166,6 +175,8 @@
     var t = it.type;
     if (t === "figure") return [figurePara(it.figure || "grid", hintW(it.hint, 230), figMap)];
     if (t === "code") return [codeBox(it.content)];
+    if (t === "error") return [errorBox(it.content)];
+    if (t === "note") return [noteBox(it.content)];
     if (t === "label") return [para(mdRuns(it.content, { bold: true, size: THEME.base }), { before: 120, after: 40 })];
     if (t === "lines") return writingLines(hintN(it.hint, 3));
     if (t === "vocab") return [para(mdRuns(it.content, { bold: true, size: THEME.base }), { before: 80, after: 40 })]

@@ -67,6 +67,16 @@
       .replace(/"/g, "&quot;");
   }
 
+  /* Inline markdown: **bold**, *italic*, `code`. Escape first, always — the
+   * patterns below run on already-escaped text, so raw < & " never reach here. */
+  function mdInline(s) {
+    s = esc(s);
+    s = s.replace(/`([^`]+)`/g, '<code class="ic">$1</code>');
+    s = s.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+    s = s.replace(/(^|[^*])\*([^*]+)\*/g, "$1<i>$2</i>");
+    return s;
+  }
+
   /* ------------------------------------------------------------------ *
    * Row selection helpers                                               *
    * ------------------------------------------------------------------ */
@@ -330,14 +340,16 @@
       return '<div class="fig" style="max-width:' + w + 'px">' + figureSVG(it.figure || "grid") + '</div>';
     }
     if (t === "code") return '<pre class="code">' + esc(it.content) + "</pre>";
-    if (t === "label") return '<div class="ilabel">' + esc(it.content) + "</div>";
+    if (t === "error") return '<pre class="error"><b>Python says:</b> ' + esc(it.content) + "</pre>";
+    if (t === "note") return '<div class="note">' + mdInline(it.content) + "</div>";
+    if (t === "label") return '<div class="ilabel">' + mdInline(it.content) + "</div>";
     if (t === "lines") return lines(hintN(it.hint, 3));
     if (t === "vocab") {
-      return '<div class="vocab"><span class="term">' + esc(it.content) + "</span>" + lines(hintN(it.hint, 2)) + "</div>";
+      return '<div class="vocab"><span class="term">' + mdInline(it.content) + "</span>" + lines(hintN(it.hint, 2)) + "</div>";
     }
     // p (prompt) — text then writing lines (default 2)
     var n = hintN(it.hint, 2);
-    return '<div class="prompt"><div class="ptext">' + esc(it.content) + "</div>" + (n > 0 ? lines(n) : "") + "</div>";
+    return '<div class="prompt"><div class="ptext">' + mdInline(it.content) + "</div>" + (n > 0 ? lines(n) : "") + "</div>";
   }
 
   function headerHTML(w) {
@@ -443,6 +455,9 @@
 ".wl{margin:3px 0}",
 ".wline{border-bottom:1px solid #9aa;height:var(--line-h)}",
 ".code{background:#f5f5f5;border:1px solid #ccc;border-left:4px solid #888;padding:8px 10px;font-family:Consolas,monospace;font-size:11pt;white-space:pre-wrap;border-radius:2px}",
+".error{background:var(--shade);border:1px solid #ccc;border-left:4px solid #888;padding:8px 10px;font-family:Consolas,monospace;font-size:11pt;white-space:pre-wrap;border-radius:2px}",
+".note{border:1px solid var(--rule);padding:8px 10px;margin:8px 0}",
+".ic{background:var(--shade);font-family:Consolas,monospace;font-size:0.92em;padding:0 3px}",
 ".fig{max-width:var(--fig-max);margin:8px 0}.fig svg{display:block;width:100%;height:auto}",
 ".cover h1{font-size:34pt;margin:.2in 0 0}.covertag{color:var(--accent);font-weight:800;letter-spacing:.12em}",
 ".coversub{color:#555;margin-bottom:.25in}",
@@ -455,7 +470,7 @@
   }
 
   var API = {
-    COLS: COLS, parseCSV: parseCSV, toCSV: toCSV, esc: esc,
+    COLS: COLS, parseCSV: parseCSV, toCSV: toCSV, esc: esc, mdInline: mdInline,
     courses: courses, units: units, warmPages: warmPages, pageRows: pageRows,
     warmupFromRows: warmupFromRows, rowsFromWarmup: rowsFromWarmup, blankWarmup: blankWarmup,
     stripItems: stripItems, parseFigure: parseFigure, starPoints: starPoints,

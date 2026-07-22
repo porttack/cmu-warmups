@@ -240,6 +240,25 @@ def code_box(doc, text):
         _run(p, line, mono=True, size=11)
 
 
+def error_box(doc, text):
+    p = doc.add_paragraph()
+    _no_space(p, before=4, after=4)
+    _shade(p._p.get_or_add_pPr(), THEME["shade"])
+    _p_border(p, ("top", "bottom", "left", "right"), THEME["code_border"], sz=4)
+    _run(p, "Python says: ", mono=True, bold=True, size=11)
+    for i, line in enumerate(str(text or "").split("\n")):
+        if i:
+            p.add_run().add_break()
+        _run(p, line, mono=True, size=11)
+
+
+def note_box(doc, text):
+    p = doc.add_paragraph()
+    _no_space(p, before=4, after=4)
+    _p_border(p, ("top", "bottom", "left", "right"), sz=4)
+    _md_run(p, text, size=THEME["base_pt"])
+
+
 def hint_n(hint, default):
     for tok in str(hint or "").replace(" ", "").split(";"):
         if tok.startswith("n="):
@@ -278,6 +297,10 @@ def render_item(doc, it, figcache):
         place_figure(doc, it["figure"] or "grid", hint_w(it["hint"], 230), figcache)
     elif t == "code":
         code_box(doc, it["content"])
+    elif t == "error":
+        error_box(doc, it["content"])
+    elif t == "note":
+        note_box(doc, it["content"])
     elif t == "label":
         p = doc.add_paragraph()
         _no_space(p, before=6, after=2)

@@ -340,6 +340,8 @@
       return '<div class="fig" style="max-width:' + w + 'px">' + figureSVG(it.figure || "grid") + '</div>';
     }
     if (t === "code") return '<pre class="code">' + esc(it.content) + "</pre>";
+    if (t === "error") return '<pre class="error"><b>Python says:</b> ' + esc(it.content) + "</pre>";
+    if (t === "note") return '<div class="note">' + mdInline(it.content) + "</div>";
     if (t === "label") return '<div class="ilabel">' + mdInline(it.content) + "</div>";
     if (t === "lines") return lines(hintN(it.hint, 3));
     if (t === "vocab") {
@@ -453,6 +455,8 @@
 ".wl{margin:3px 0}",
 ".wline{border-bottom:1px solid #9aa;height:var(--line-h)}",
 ".code{background:#f5f5f5;border:1px solid #ccc;border-left:4px solid #888;padding:8px 10px;font-family:Consolas,monospace;font-size:11pt;white-space:pre-wrap;border-radius:2px}",
+".error{background:var(--shade);border:1px solid #ccc;border-left:4px solid #888;padding:8px 10px;font-family:Consolas,monospace;font-size:11pt;white-space:pre-wrap;border-radius:2px}",
+".note{border:1px solid var(--rule);padding:8px 10px;margin:8px 0}",
 ".ic{background:var(--shade);font-family:Consolas,monospace;font-size:0.92em;padding:0 3px}",
 ".fig{max-width:var(--fig-max);margin:8px 0}.fig svg{display:block;width:100%;height:auto}",
 ".cover h1{font-size:34pt;margin:.2in 0 0}.covertag{color:var(--accent);font-weight:800;letter-spacing:.12em}",

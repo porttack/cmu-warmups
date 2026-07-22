@@ -18,7 +18,7 @@
         : (typeof globalThis !== "undefined" ? globalThis.L : null);
 
   var THEME = {
-    accent: "1F3A5F", shade: "EEEEEE", line: "99AABB",
+    accent: "1F3A5F", shade: "EEEEEE", line: "99AABB", rule: "111111",
     codeBg: "F5F5F5", codeBorder: "888888", cover: "1F3A5F",
     base: 24, small: 18, strip: 20, title: 26,  // half-points
     lineTwips: 440                               // 22pt writing-line height
@@ -46,8 +46,27 @@
 
   function run(text, o) {
     o = o || {};
-    return new T({ text: text, bold: !!o.bold, color: o.color, size: o.size || THEME.base,
+    return new T({ text: text, bold: !!o.bold, italics: !!o.italics, color: o.color, size: o.size || THEME.base,
       font: o.mono ? "Consolas" : "Calibri", break: o.break });
+  }
+
+  /* Inline markdown -> run specs: **bold**, *italic*, `code`. Mirrors mdInline()
+   * in wblib.js, but produces TextRuns instead of escaped HTML. */
+  function mdRuns(s, base) {
+    base = base || {};
+    var out = [], re = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g, last = 0, m;
+    s = String(s == null ? "" : s);
+    while ((m = re.exec(s))) {
+      if (m.index > last) out.push(run(s.slice(last, m.index), base));
+      var tok = m[0];
+      if (tok.slice(0, 2) === "**") out.push(run(tok.slice(2, -2), Object.assign({}, base, { bold: true })));
+      else if (tok[0] === "*")      out.push(run(tok.slice(1, -1), Object.assign({}, base, { italics: true })));
+      else                          out.push(run(tok.slice(1, -1), Object.assign({}, base, { mono: true })));
+      last = re.lastIndex;
+    }
+    if (last < s.length) out.push(run(s.slice(last), base));
+    if (!out.length) out.push(run(s, base));
+    return out;
   }
   function para(children, o) {
     o = o || {};
@@ -136,6 +155,15 @@
     lines.forEach(function (ln, i) { kids.push(run(ln, { mono: true, size: 22, break: i ? 1 : 0 })); });
     return para(kids, { before: 80, after: 80, shade: THEME.codeBg, allBorder: THEME.codeBorder });
   }
+  function errorBox(text) {
+    var lines = String(text == null ? "" : text).split("\n");
+    var kids = [run("Python says: ", { bold: true, mono: true, size: 22 })];
+    lines.forEach(function (ln, i) { kids.push(run(ln, { mono: true, size: 22, break: i ? 1 : 0 })); });
+    return para(kids, { before: 80, after: 80, shade: THEME.shade, allBorder: THEME.codeBorder });
+  }
+  function noteBox(text) {
+    return para(mdRuns(text, { size: THEME.base }), { before: 80, after: 80, allBorder: THEME.rule });
+  }
   function figurePara(spec, wpx, figMap) {
     var bytes = figBytes(figMap && figMap[spec]);
     if (!bytes) return para([run("[figure: " + spec + "]", { color: "888888", size: THEME.small })]);
@@ -147,12 +175,14 @@
     var t = it.type;
     if (t === "figure") return [figurePara(it.figure || "grid", hintW(it.hint, 230), figMap)];
     if (t === "code") return [codeBox(it.content)];
-    if (t === "label") return [para([run(it.content, { bold: true, size: THEME.base })], { before: 120, after: 40 })];
+    if (t === "error") return [errorBox(it.content)];
+    if (t === "note") return [noteBox(it.content)];
+    if (t === "label") return [para(mdRuns(it.content, { bold: true, size: THEME.base }), { before: 120, after: 40 })];
     if (t === "lines") return writingLines(hintN(it.hint, 3));
-    if (t === "vocab") return [para([run(it.content, { bold: true, size: THEME.base })], { before: 80, after: 40 })]
+    if (t === "vocab") return [para(mdRuns(it.content, { bold: true, size: THEME.base }), { before: 80, after: 40 })]
       .concat(writingLines(hintN(it.hint, 2)));
     var n = hintN(it.hint, 2);
-    return [para([run(it.content, { size: THEME.base })], { before: 80, after: 40 })].concat(n > 0 ? writingLines(n) : []);
+    return [para(mdRuns(it.content, { size: THEME.base }), { before: 80, after: 40 })].concat(n > 0 ? writingLines(n) : []);
   }
 
   function warmupParas(w, figMap) {
@@ -234,7 +264,7 @@
     });
   }
 
-  var API = { buildDoc: buildDoc, figKeysForScope: figKeysForScope, THEME: THEME };
+  var API = { buildDoc: buildDoc, figKeysForScope: figKeysForScope, THEME: THEME, mdRuns: mdRuns };
   if (typeof module !== "undefined" && module.exports) module.exports = API;
   if (typeof window !== "undefined") window.WBDOCX = API;
 })();
