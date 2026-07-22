@@ -54,6 +54,43 @@ pages unless you want minima's header landing in the middle of a printed workboo
   for a figure.
 - **figure** — a figure spec; blank on non-figure rows.
 
+### Type recipes
+
+Common `type`/`hint` combinations, since the two columns interact:
+
+- **Prompt with writing lines** — `type=p`, `hint=n=2` (or any N). The
+  default: text, then N ruled lines.
+- **Plain text, no writing lines, no box** — `type=p`, `hint=n=0`. Same
+  markdown-enabled text as any prompt, just nothing to write on.
+- **Bold inline label** — `type=label`. No box, no lines — just bold,
+  markdown-enabled text.
+- **Bordered callout** — `type=note`. A box around markdown-enabled text,
+  for a rule, a tip, or a "remember this."
+- **Python error message** — `type=error`. Shaded, monospace, automatically
+  prefixed with "Python says:". `content` is the raw message text (see
+  Multi-line content below for messages spanning more than one line).
+- **Program listing** — `type=code`. Shaded, monospace; markdown is never
+  processed, so asterisks and backticks in real code survive untouched.
+- **Just writing lines, no text above them** — `type=lines`, `hint=n=N`.
+- **Vocabulary term** — `type=vocab`, meaningful only in the `vocab`
+  section: bold term, then `hint=n=N` writing lines (default 2).
+- **Anything else** — an unrecognised `type` renders exactly like `p`
+  (markdown-enabled text plus `hint`-controlled writing lines), so a typo in
+  this column degrades gracefully instead of breaking the page.
+
+### Meta rows (`section=meta`)
+
+A warm-up's `meta` rows carry page furniture rather than printed prompts:
+
+- `type=topic` — the warm-up's title, shown in the blue title bar.
+- `type=ican` — an "I can…" skill. The first two become START HERE strip
+  rows B and C; every `ican` row across the unit is also collected onto the
+  unit cover page.
+- `type=reflect` — optional; fills strip row D. Omit it and a generic
+  look-back prompt is used instead.
+- `type=checkin` — optional; fills strip row E. Omit it and a rotating
+  check-in question is used instead.
+
 ### Inline markdown
 
 The `content` column supports a small inline set — no headings, lists, or
