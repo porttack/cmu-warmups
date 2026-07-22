@@ -88,7 +88,9 @@ function renderEditor(){
     +'<div class="fld"><label>Warm-up number</label><input id="f-no" value="'+L.esc(w.no)+'"></div>'
     +'<div class="fld"><label>Topic (title)</label><input id="f-topic" value="'+L.esc(w.topic)+'"></div>'
     +'<div class="fld"><label>I can… (B)</label><input id="f-ican0" value="'+L.esc(w.ican[0]||"")+'"></div>'
-    +'<div class="fld"><label>I can… (C)</label><input id="f-ican1" value="'+L.esc(w.ican[1]||"")+'"></div></div>'
+    +'<div class="fld"><label>I can… (C)</label><input id="f-ican1" value="'+L.esc(w.ican[1]||"")+'"></div>'
+    +'<div class="fld"><label>Reflection (D) — blank uses the generic look-back</label><input id="f-reflect" value="'+L.esc(w.reflect||"")+'"></div>'
+    +'<div class="fld"><label>Check-in (E) — blank rotates through the built-in list</label><input id="f-checkin" value="'+L.esc(w.checkin||"")+'"></div></div>'
     +sectionEditor("Vocabulary","vocab",w.vocab)
     +sectionEditor("Part 1 — core","part1",w.part1)
     +sectionEditor("Part 2 — stretch","part2",w.part2);
@@ -97,6 +99,7 @@ function renderEditor(){
 function collect(){
   var w=model();
   w.no=$("#f-no").value; w.topic=$("#f-topic").value; w.ican=[$("#f-ican0").value,$("#f-ican1").value];
+  w.reflect=$("#f-reflect").value; w.checkin=$("#f-checkin").value;
   ["vocab","part1","part2"].forEach(function(sec){
     var list=document.querySelector('.list[data-sec="'+sec+'"]'), items=[];
     list.querySelectorAll(".item").forEach(function(node){

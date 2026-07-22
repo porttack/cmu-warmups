@@ -136,7 +136,18 @@ const warmups = [
     [ p("Which name is clearer for a player's score — s or score? Why does it matter once the program gets long?", 2),
       code("livs = 3\nlives = livs - 1"),
       p("This code has a typo bug. Find it and write the corrected two lines.", 2) ],
-    [ p("Add a comment (#) that explains what lives = lives - 1 does in a game.", 2) ])
+    [ p("Add a comment (#) that explains what lives = lives - 1 does in a game.", 2) ]),
+
+  /* ===================== TEST BENCH (cs0 / unit 9) =====================
+   * Scratch page exercising renderer features, not classroom content.
+   * Delete this entry and re-run to drop it from content.csv.          */
+  { course: "cs0", unit: 9, no: 99, page: "w99", topic: "Test bench",
+    ican: ["I can render every item type", "I can spot a regression"],
+    reflect: "Battleship was",
+    checkin: "Check-in — battery: my mental battery is at about ____ % because",
+    vocab: [],                                   // zero-vocab page: no heading, no gap
+    part1: [ p("This page has no vocabulary rows at all.", 2) ],
+    part2: [ p("Stretch prompt.", 2) ] }
 ];
 
 let rows = [];

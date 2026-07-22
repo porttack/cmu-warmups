@@ -103,13 +103,15 @@
     var w = {
       course: meta.course || "cs1", unit: meta.unit || "1",
       no: meta.warmup_no || "", page: meta.page || "w1",
-      topic: "", ican: [], vocab: [], part1: [], part2: []
+      topic: "", ican: [], reflect: "", checkin: "", vocab: [], part1: [], part2: []
     };
     rows.slice().forEach(function (r) {
       var sec = r.section, it = { type: r.type, content: r.content, hint: r.hint, figure: r.figure, seq: r.seq };
       if (sec === "meta") {
         if (r.type === "topic") w.topic = r.content;
         else if (r.type === "ican") w.ican.push(r.content);
+        else if (r.type === "reflect") w.reflect = r.content;
+        else if (r.type === "checkin") w.checkin = r.content;
       } else if (sec === "vocab") w.vocab.push(it);
       else if (sec === "part1") w.part1.push(it);
       else if (sec === "part2") w.part2.push(it);
@@ -133,6 +135,8 @@
     }
     push("meta", "topic", w.topic);
     (w.ican || []).forEach(function (t) { push("meta", "ican", t); });
+    if (w.reflect) push("meta", "reflect", w.reflect);
+    if (w.checkin) push("meta", "checkin", w.checkin);
     (w.vocab || []).forEach(function (it) { push("vocab", it.type || "vocab", it.content, it.hint, it.figure); });
     (w.part1 || []).forEach(function (it) { push("part1", it.type || "p", it.content, it.hint, it.figure); });
     (w.part2 || []).forEach(function (it) { push("part2", it.type || "p", it.content, it.hint, it.figure); });
@@ -151,7 +155,9 @@
   }
 
   /* ------------------------------------------------------------------ *
-   * START HERE strip (A–E). A/D fixed, B/C from ican, E rotates by no.  *
+   * START HERE strip (A–E). A fixed, B/C from ican. D and E use the page's *
+   * authored meta/reflect and meta/checkin rows verbatim when present;      *
+   * SEL only backfills E for pages that never authored one.                 *
    * ------------------------------------------------------------------ */
   var SEL = [
     "One word for how today is going so far:",
@@ -168,8 +174,10 @@
       { L: "A", kind: "pace", text: "Pace check — circle one:", opts: ["feeling good", "a bit distracted", "stuck — I could use help"] },
       { L: "B", kind: "ican", text: ican[0] || "" },
       { L: "C", kind: "ican", text: ican[1] || "" },
-      { L: "D", kind: "reflect", text: "Looking back at last class — one thing that clicked, and one thing still fuzzy:" },
-      { L: "E", kind: "sel", text: SEL[no % SEL.length] }
+      { L: "D", kind: "reflect",
+        text: w.reflect || "Looking back at last class — one thing that clicked, and one thing still fuzzy:" },
+      { L: "E", kind: "sel",
+        text: w.checkin || SEL[no % SEL.length] }
     ];
   }
 
@@ -356,9 +364,10 @@
 
   function warmupHTML(w, opts) {
     opts = opts || {};
+    var vocab = w.vocab || [];
     var p1 = headerHTML(w) + stripHTML(w) +
-      '<div class="seclabel">Vocabulary — write each in your own words</div>' +
-      w.vocab.map(itemHTML).join("");
+      (vocab.length ? '<div class="seclabel">Vocabulary — write each in your own words</div>' +
+        vocab.map(itemHTML).join("") : "");
     var p2 = '<div class="seclabel">Part 1 — core work</div>' + w.part1.map(itemHTML).join("") +
       '<div class="part2bar">PART 2 <em>— keep going if you finish early.</em></div>' +
       w.part2.map(itemHTML).join("");

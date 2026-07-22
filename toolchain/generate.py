@@ -41,6 +41,8 @@ THEME = {
     "fig_dpi": 150,           # px width -> inches divisor is 96; render at 1500px
 }
 
+# Fallback check-ins for row E. Only consulted when a page has no meta/checkin
+# row of its own — an authored check-in is always used verbatim.
 SEL = [
     "One word for how today is going so far:",
     "Something you are looking forward to this week:",
@@ -153,8 +155,8 @@ def strip_block(doc, w):
         ("A", "Pace check — circle one:", "feeling good    a bit distracted    stuck — I could use help", False),
         ("B", (ican[0] if len(ican) > 0 else ""), "got it    shaky    not yet", False),
         ("C", (ican[1] if len(ican) > 1 else ""), "got it    shaky    not yet", False),
-        ("D", "Looking back at last class — one thing that clicked, and one thing still fuzzy:", None, True),
-        ("E", SEL[no % len(SEL)], None, True),
+        ("D", w.get("reflect") or "Looking back at last class — one thing that clicked, and one thing still fuzzy:", None, True),
+        ("E", w.get("checkin") or SEL[no % len(SEL)], None, True),
     ]
     t = doc.add_table(rows=len(items), cols=2)
     t.style = "Table Grid"
@@ -275,7 +277,8 @@ def load_rows(path):
 def warmup_from_rows(rows):
     meta = rows[0]
     w = {"course": meta["course"], "unit": meta["unit"], "no": meta["warmup_no"],
-         "page": meta["page"], "topic": "", "ican": [], "vocab": [], "part1": [], "part2": []}
+         "page": meta["page"], "topic": "", "ican": [], "reflect": "", "checkin": "",
+         "vocab": [], "part1": [], "part2": []}
     for r in rows:
         sec = r["section"]
         it = {"type": r["type"], "content": r["content"], "hint": r["hint"], "figure": r["figure"]}
@@ -284,6 +287,10 @@ def warmup_from_rows(rows):
                 w["topic"] = r["content"]
             elif r["type"] == "ican":
                 w["ican"].append(r["content"])
+            elif r["type"] == "reflect":
+                w["reflect"] = r["content"]
+            elif r["type"] == "checkin":
+                w["checkin"] = r["content"]
         elif sec in ("vocab", "part1", "part2"):
             w[sec].append(it)
     return w
@@ -350,10 +357,11 @@ def cover_page(doc, course, unit, ws):
 def build_warmup(doc, w):
     header_block(doc, w)               # page 1
     strip_block(doc, w)
-    section_label(doc, "Vocabulary \u2014 write each in your own words")
     figcache = doc._figcache
-    for it in w["vocab"]:
-        render_item(doc, it, figcache)
+    if w["vocab"]:                     # no vocab rows -> no heading, no gap
+        section_label(doc, "Vocabulary \u2014 write each in your own words")
+        for it in w["vocab"]:
+            render_item(doc, it, figcache)
     doc.add_page_break()               # -> page 2
     section_label(doc, "Part 1 \u2014 core work")
     for it in w["part1"]:

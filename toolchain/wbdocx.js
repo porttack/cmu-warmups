@@ -159,8 +159,11 @@
     var out = [];
     headerBlock(w).forEach(function (x) { out.push(x); });
     stripBlock(w).forEach(function (x) { out.push(x); });
-    out.push(sectionLabel("Vocabulary \u2014 write each in your own words"));
-    w.vocab.forEach(function (it) { itemParas(it, figMap).forEach(function (p) { out.push(p); }); });
+    var vocab = w.vocab || [];
+    if (vocab.length) {                                 // no vocab rows -> no heading, no gap
+      out.push(sectionLabel("Vocabulary \u2014 write each in your own words"));
+      vocab.forEach(function (it) { itemParas(it, figMap).forEach(function (p) { out.push(p); }); });
+    }
     out.push(para([new PB()]));                         // -> page 2
     out.push(sectionLabel("Part 1 \u2014 core work"));
     w.part1.forEach(function (it) { itemParas(it, figMap).forEach(function (p) { out.push(p); }); });
