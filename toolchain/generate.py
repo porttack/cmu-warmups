@@ -287,6 +287,20 @@ def table_rows(content):
             for ln in text.replace("\r\n", "\n").split("\n") if ln != ""]
 
 
+# match content: one pair per line, left/right separated by :: (mirrors
+# matchPairs() in wblib.js). Author pre-scrambles the right column; never
+# reordered here.
+def match_pairs(content):
+    text = "" if content is None else str(content)
+    out = []
+    for ln in text.replace("\r\n", "\n").split("\n"):
+        if ln == "":
+            continue
+        i = ln.find("::")
+        out.append([ln.strip(), ""] if i < 0 else [ln[:i].strip(), ln[i + 2:].strip()])
+    return out
+
+
 def table_box(doc, it):
     trows = table_rows(it["content"])
     if not trows:
@@ -312,6 +326,28 @@ def table_box(doc, it):
             p = c.paragraphs[0]
             _no_space(p)
             _md_run(p, text, bold=is_head, size=THEME["base_pt"])
+
+
+def match_box(doc, it):
+    mpairs = match_pairs(it["content"])
+    if not mpairs:
+        return
+    t = doc.add_table(rows=len(mpairs), cols=3)
+    _set_table_full(t)
+    _no_table_borders(t)
+    t.columns[0].width = Inches(6.5 * 0.38)
+    t.columns[1].width = Inches(6.5 * 0.20)
+    t.columns[2].width = Inches(6.5 * 0.42)
+    for ri, (term, meaning) in enumerate(mpairs):
+        row = t.rows[ri]
+        row.height_rule = WD_ROW_HEIGHT_RULE.AT_LEAST
+        row.height = Pt(THEME["line_h_pt"])
+        tp = t.cell(ri, 0).paragraphs[0]
+        _no_space(tp)
+        _md_run(tp, term, bold=True, size=THEME["base_pt"])
+        mp = t.cell(ri, 2).paragraphs[0]
+        _no_space(mp)
+        _md_run(mp, meaning, size=THEME["base_pt"])
 
 
 def place_figure(doc, spec, wpx, figcache):
@@ -390,6 +426,8 @@ def render_item(doc, it, figcache):
         note_box(doc, it["content"])
     elif t == "table":
         table_box(doc, it)
+    elif t == "match":
+        match_box(doc, it)
     elif t == "label":
         p = doc.add_paragraph()
         _no_space(p, before=6, after=2)

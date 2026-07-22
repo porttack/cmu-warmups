@@ -4,6 +4,23 @@ Notable changes to the workbook generator, one entry per implementation
 session (see the CS0 prep notes for full session scope and ground rules).
 Newest first.
 
+## 2026-07-22 — Session 6: `match` item type
+
+- Added `match`: a two-column matching exercise. `content` is one pair per
+  line, left and right separated by `::`. Renders as two columns — left
+  terms bold, right meanings in body font — with a blank gutter column
+  between them and each row tall enough (the writing-line height token) to
+  draw a line across. Never shuffled at render time: authors pre-scramble
+  the right column themselves so the printed layout stays stable.
+- Mirrored across all three renderers, sharing the pair-parsing logic
+  (`matchPairs`) between `docs/wblib.js` and `docs/wbdocx.js`, and an
+  independent Python mirror (`match_pairs`) in `toolchain/generate.py`. The
+  Word builders lay it out as a borderless three-column table (term / gutter
+  / meaning) so the gutter can't collapse to zero width.
+- Added `match` to the warm-up editor's type list — a plain textarea holds
+  the `::`-separated content, no dedicated grid UI.
+- Added a `csN-demo` page (unit 1, `w25`) demonstrating a matching exercise.
+
 ## 2026-07-22 — Session 5: Figure text labels and side-by-side figures
 
 - Extended figure specs with `text x,y,LABEL`: draws `LABEL` at canvas

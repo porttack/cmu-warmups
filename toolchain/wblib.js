@@ -348,6 +348,18 @@
       .map(function (ln) { return ln.split("|").map(function (c) { return c.trim(); }); });
   }
 
+  /* match content: one pair per line, left/right separated by :: (shared by
+   * all renderers). Author pre-scrambles the right column; never reordered
+   * here. */
+  function matchPairs(content) {
+    var text = String(content == null ? "" : content).replace(/\r\n/g, "\n");
+    return text.split("\n").filter(function (ln) { return ln !== ""; })
+      .map(function (ln) {
+        var i = ln.indexOf("::");
+        return i < 0 ? [ln.trim(), ""] : [ln.slice(0, i).trim(), ln.slice(i + 2).trim()];
+      });
+  }
+
   function itemHTML(it) {
     var t = it.type;
     if (t === "figure") {
@@ -370,6 +382,15 @@
         }).join("") + "</tr>";
       });
       return out + "</table>";
+    }
+    if (t === "match") {
+      var mpairs = matchPairs(it.content);
+      var mout = '<table class="match">';
+      mpairs.forEach(function (pr) {
+        mout += '<tr><td class="mterm">' + mdInline(pr[0]) + '</td><td class="mgap"></td>' +
+          '<td class="mmeaning">' + mdInline(pr[1]) + "</td></tr>";
+      });
+      return mout + "</table>";
     }
     if (t === "label") return '<div class="ilabel">' + mdInline(it.content) + "</div>";
     if (t === "lines") return lines(hintN(it.hint, 3));
@@ -509,6 +530,11 @@
 ".ttable th,.ttable td{border:1px solid var(--rule);padding:4px 8px;text-align:left;vertical-align:top;overflow-wrap:break-word}",
 ".ttable td{height:var(--line-h)}",
 ".ttable th{background:var(--shade);font-weight:700}",
+".match{width:100%;border-collapse:collapse;margin:8px 0}",
+".match td{vertical-align:top;padding:0 10px;height:var(--line-h)}",
+".match .mterm{font-weight:700;width:38%}",
+".match .mgap{width:20%}",
+".match .mmeaning{width:42%}",
 ".ic{background:var(--shade);font-family:Consolas,monospace;font-size:0.92em;padding:0 3px}",
 ".fig{max-width:var(--fig-max);margin:8px 0}.fig svg{display:block;width:100%;height:auto}",
 ".figcols{display:flex;gap:8px}.figcols .fig{margin:8px 0;flex:0 0 auto}",
@@ -531,7 +557,7 @@
     warmupHTML: warmupHTML, unitHTML: unitHTML, scopeHTML: scopeHTML,
     warmupCardsHTML: warmupCardsHTML, unitCoverHTML: unitCoverHTML, styleCSS: styleCSS,
     hintN: hintN, hintW: hintW, hintH: hintH, hintNoHead: hintNoHead, hintCols: hintCols,
-    tableRows: tableRows, itemHTML: itemHTML, itemsHTML: itemsHTML
+    tableRows: tableRows, matchPairs: matchPairs, itemHTML: itemHTML, itemsHTML: itemsHTML
   };
   if (typeof module !== "undefined" && module.exports) module.exports = API;
   if (typeof window !== "undefined") window.L = API;

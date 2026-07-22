@@ -188,6 +188,18 @@
     });
     return fullTable(rows);
   }
+  function matchBlock(it) {
+    var mpairs = L.matchPairs(it.content);
+    var rows = mpairs.map(function (p) {
+      var tds = [
+        cell([para(mdRuns(p[0], { bold: true, size: THEME.base }))], { wpct: 38 }),
+        cell([para([])], { wpct: 20 }),
+        cell([para(mdRuns(p[1], { size: THEME.base }))], { wpct: 42 })
+      ];
+      return new Row({ children: tds, height: { value: THEME.lineTwips, rule: D.HeightRule.ATLEAST } });
+    });
+    return borderlessTable(rows);
+  }
   function figurePara(spec, wpx, figMap) {
     var bytes = figBytes(figMap && figMap[spec]);
     if (!bytes) return para([run("[figure: " + spec + "]", { color: "888888", size: THEME.small })]);
@@ -217,6 +229,7 @@
     if (t === "error") return [errorBox(it.content)];
     if (t === "note") return [noteBox(it.content)];
     if (t === "table") return [tableBlock(it)];
+    if (t === "match") return [matchBlock(it)];
     if (t === "label") return [para(mdRuns(it.content, { bold: true, size: THEME.base }), { before: 120, after: 40 })];
     if (t === "lines") return writingLines(hintN(it.hint, 3));
     if (t === "vocab") return [para(mdRuns(it.content, { bold: true, size: THEME.base }), { before: 80, after: 40 })]

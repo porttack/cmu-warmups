@@ -48,12 +48,14 @@ pages unless you want minima's header landing in the middle of a printed workboo
 - **type** — `topic`, `ican`, `vocab`, `p` (prompt plus writing lines), `code`,
   `figure`, `label`, `lines`, `note` (bordered callout box), `error` (a Python
   error message, shown shaded and monospace with an automatic "Python says:"
-  label), `table` (a bordered trace/data table). An unrecognised `type` value
-  falls back to a plain prompt rather than throwing.
+  label), `table` (a bordered trace/data table), `match` (a two-column
+  matching exercise). An unrecognised `type` value falls back to a plain
+  prompt rather than throwing.
 - **hint** — `n=N` writing lines for a prompt or vocab term; `w=NNN` display width
   for a figure; `h=NN` cell height in px for a table; `head=0` on a table to
   treat every row as data (no header row); `cols=N` on a figure to sit it
-  side by side with the next N-1 figures that also carry `cols=N`.
+  side by side with the next N-1 figures that also carry `cols=N`. `match`
+  rows ignore `hint`.
 - **figure** — a figure spec; blank on non-figure rows.
 
 ### Type recipes
@@ -79,6 +81,12 @@ Common `type`/`hint` combinations, since the two columns interact:
   `hint` contains `head=0`. Empty cells render blank and tall enough to write
   in; `hint` may also carry `h=NN` for cell height in px (default: the
   writing-line height). Cells support the same inline markdown as `p`.
+- **Matching exercise** — `type=match`. `content` is one pair per line, left
+  and right separated by `::` — see Multi-line content below for the
+  multi-line `content` cell this needs. Renders as two columns with room to
+  draw a line between them. Never shuffled at render time: pre-scramble the
+  right-hand values yourself so the printed layout (and any answer key) stays
+  stable across renders. Both sides support the same inline markdown as `p`.
 - **Vocabulary term** — `type=vocab`, meaningful only in the `vocab`
   section: bold term, then `hint=n=N` writing lines (default 2).
 - **Anything else** — an unrecognised `type` renders exactly like `p`
@@ -109,7 +117,8 @@ links:
 `code`      ->  inline monospace
 ```
 
-Supported in `p`, `label`, `vocab`, and `note` rows. `code` and `error` rows
+Supported in `p`, `label`, `vocab`, `note`, `table`, and `match` rows. `code`
+and `error` rows
 are literal text — markdown characters there are never processed, so
 asterisks and backticks in real code or error output survive untouched. All
 three renderers (HTML, the JS Word builder, the Python Word builder) implement

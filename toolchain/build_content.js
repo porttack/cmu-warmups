@@ -276,7 +276,15 @@ const demoWarmups = [
       figCols("grid; dot 350,350; text 360,340,A", 230, 2),
       figCols("grid", 230, 2) ],
     part2: [
-      fig("grid; circle 200,200,80,gray; text 200,110,r", 300) ] })
+      fig("grid; circle 200,200,80,gray; text 200,110,r", 300) ] }),
+
+  DEMO(25, "Matching", {
+    ican: ["I can match a term to its meaning",
+           "I can draw lines between two columns"],
+    part1: [
+      p("MATCH — draw a line from each term to its meaning.", 0),
+      { type: "match",
+        content: "origin :: how puffy or spiky a star is\nroundness :: (0, 0) — the top-left corner" } ] })
 ];
 
 let rows = [];

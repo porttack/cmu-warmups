@@ -279,3 +279,9 @@ csN-demo,1,24,w24,part1,3,p,Two grids side by side with lettered dots.,n=0,
 csN-demo,1,24,w24,part1,4,figure,,w=230 cols=2,"grid; dot 350,350; text 360,340,A"
 csN-demo,1,24,w24,part1,5,figure,,w=230 cols=2,grid
 csN-demo,1,24,w24,part2,6,figure,,w=300,"grid; circle 200,200,80,gray; text 200,110,r"
+csN-demo,1,25,w25,meta,0,topic,Matching,,
+csN-demo,1,25,w25,meta,1,ican,I can match a term to its meaning,,
+csN-demo,1,25,w25,meta,2,ican,I can draw lines between two columns,,
+csN-demo,1,25,w25,part1,3,p,MATCH — draw a line from each term to its meaning.,n=0,
+csN-demo,1,25,w25,part1,4,match,"origin :: how puffy or spiky a star is
+roundness :: (0, 0) — the top-left corner",,
