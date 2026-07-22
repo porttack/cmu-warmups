@@ -230,6 +230,7 @@
       else if (kw === "star") { var s = nums(args); out.shapes.push({ t: "star", cx: s[0], cy: s[1], r: s[2], pts: s[3] || 5, fill: grayToColor(args[4]) }); }
       else if (kw === "line") { var l = nums(args); out.shapes.push({ t: "line", x1: l[0], y1: l[1], x2: l[2], y2: l[3] }); }
       else if (kw === "dot") { var d = nums(args); out.shapes.push({ t: "dot", x: d[0], y: d[1] }); }
+      else if (kw === "text") { out.shapes.push({ t: "text", x: +args[0], y: +args[1], label: (args.slice(2).join(",") || "").replace(/_/g, " ") }); }
     });
     return out;
   }
@@ -264,6 +265,7 @@
         s += '<text x="' + (-lbl) + '" y="' + t + '" font-size="' + fs + '" fill="#555" font-family="sans-serif" text-anchor="end" dominant-baseline="middle">' + t + '</text>';
       }
     }
+    var textFs = Math.max(14, Math.round(C * 0.045));
     f.shapes.forEach(function (sh) {
       var fill = sh.fill || "none", st = 'stroke="#111" stroke-width="2"';
       if (sh.t === "circle") s += '<circle cx="' + sh.cx + '" cy="' + sh.cy + '" r="' + sh.r + '" fill="' + fill + '" ' + st + '/>';
@@ -272,6 +274,7 @@
       else if (sh.t === "star") { var pp = starPoints(sh.cx, sh.cy, sh.r, sh.pts).map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" "); s += '<polygon points="' + pp + '" fill="' + fill + '" ' + st + '/>'; }
       else if (sh.t === "line") s += '<line x1="' + sh.x1 + '" y1="' + sh.y1 + '" x2="' + sh.x2 + '" y2="' + sh.y2 + '" stroke="#111" stroke-width="2.5"/>';
       else if (sh.t === "dot") s += '<circle cx="' + sh.x + '" cy="' + sh.y + '" r="5" fill="#111"/>';
+      else if (sh.t === "text") s += '<text x="' + sh.x + '" y="' + sh.y + '" font-size="' + textFs + '" font-weight="700" font-family="sans-serif" fill="#111">' + esc(sh.label) + '</text>';
     });
     return s + "</svg>";
   }
@@ -302,6 +305,7 @@
       for (var t2 = 100; t2 < C; t2 += 100) { ctx.fillText(String(t2), ox - gap * 0.4, Y(t2)); }
       ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
     }
+    var textFs = Math.max(14, C * 0.045) * k;
     f.shapes.forEach(function (sh) {
       ctx.lineWidth = 2 * k; ctx.strokeStyle = "#111";
       function fillstroke() { if (sh.fill) { ctx.fillStyle = sh.fill; ctx.fill(); } ctx.stroke(); }
@@ -311,6 +315,7 @@
       else if (sh.t === "star") { var pp = starPoints(sh.cx, sh.cy, sh.r, sh.pts); ctx.beginPath(); pp.forEach(function (p, i) { var x = X(p[0]), y = Y(p[1]); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); }); ctx.closePath(); fillstroke(); }
       else if (sh.t === "line") { ctx.lineWidth = 2.5 * k; ctx.beginPath(); ctx.moveTo(X(sh.x1), Y(sh.y1)); ctx.lineTo(X(sh.x2), Y(sh.y2)); ctx.stroke(); }
       else if (sh.t === "dot") { ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(X(sh.x), Y(sh.y), 5 * k, 0, 2 * Math.PI); ctx.fill(); }
+      else if (sh.t === "text") { ctx.fillStyle = "#111"; ctx.font = "700 " + textFs + "px sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic"; ctx.fillText(sh.label, X(sh.x), Y(sh.y)); }
     });
     ctx.restore();
   }
@@ -334,6 +339,7 @@
   function hintW(hint, dflt) { var m = /w\s*=\s*(\d+)/.exec(hint || ""); return m ? +m[1] : dflt; }
   function hintH(hint, dflt) { var m = /h\s*=\s*(\d+)/.exec(hint || ""); return m ? +m[1] : dflt; }
   function hintNoHead(hint) { return /head\s*=\s*0/.test(String(hint || "")); }
+  function hintCols(hint) { var m = /cols\s*=\s*(\d+)/.exec(hint || ""); return m ? +m[1] : null; }
 
   /* table content: rows separated by newline, cells by | (shared by all renderers) */
   function tableRows(content) {
@@ -375,6 +381,25 @@
     return '<div class="prompt"><div class="ptext">' + mdInline(it.content) + "</div>" + (n > 0 ? lines(n) : "") + "</div>";
   }
 
+  /* Render a list of items, grouping consecutive figures that share the same
+   * cols=N hint into one side-by-side row instead of stacking them. */
+  function itemsHTML(items) {
+    var out = "", i = 0;
+    while (i < items.length) {
+      var it = items[i], c = it.type === "figure" ? hintCols(it.hint) : null;
+      if (c && c >= 2) {
+        var run = [it], j = i + 1;
+        while (j < items.length && items[j].type === "figure" && hintCols(items[j].hint) === c) { run.push(items[j]); j++; }
+        out += '<div class="figcols">' + run.map(itemHTML).join("") + "</div>";
+        i = j;
+      } else {
+        out += itemHTML(it);
+        i++;
+      }
+    }
+    return out;
+  }
+
   function headerHTML(w) {
     return '<table class="hdr"><tr>' +
       '<td class="hc" style="width:52%">Name</td><td class="hc" style="width:28%">Date</td><td class="hc">Period</td></tr>' +
@@ -402,10 +427,10 @@
     var vocab = w.vocab || [];
     var p1 = headerHTML(w) + stripHTML(w) +
       (vocab.length ? '<div class="seclabel">Vocabulary — write each in your own words</div>' +
-        vocab.map(itemHTML).join("") : "");
-    var p2 = '<div class="seclabel">Part 1 — core work</div>' + w.part1.map(itemHTML).join("") +
+        itemsHTML(vocab) : "");
+    var p2 = '<div class="seclabel">Part 1 — core work</div>' + itemsHTML(w.part1) +
       '<div class="part2bar">PART 2 <em>— keep going if you finish early.</em></div>' +
-      w.part2.map(itemHTML).join("");
+      itemsHTML(w.part2);
     return '<section class="page" data-page="' + esc(w.page) + '">' + p1 + '</section>' +
            '<section class="page">' + p2 + "</section>";
   }
@@ -486,6 +511,7 @@
 ".ttable th{background:var(--shade);font-weight:700}",
 ".ic{background:var(--shade);font-family:Consolas,monospace;font-size:0.92em;padding:0 3px}",
 ".fig{max-width:var(--fig-max);margin:8px 0}.fig svg{display:block;width:100%;height:auto}",
+".figcols{display:flex;gap:8px}.figcols .fig{margin:8px 0;flex:0 0 auto}",
 ".cover h1{font-size:34pt;margin:.2in 0 0}.covertag{color:var(--accent);font-weight:800;letter-spacing:.12em}",
 ".coversub{color:#555;margin-bottom:.25in}",
 ".coverbox{border:1px solid var(--rule);padding:10px 14px;margin:12px 0}.cbh{font-weight:800;margin-bottom:4px}",
@@ -504,7 +530,8 @@
     figureSVG: figureSVG, drawFigure: drawFigure, figureSpecs: figureSpecs,
     warmupHTML: warmupHTML, unitHTML: unitHTML, scopeHTML: scopeHTML,
     warmupCardsHTML: warmupCardsHTML, unitCoverHTML: unitCoverHTML, styleCSS: styleCSS,
-    hintN: hintN, hintW: hintW, hintH: hintH, hintNoHead: hintNoHead, tableRows: tableRows
+    hintN: hintN, hintW: hintW, hintH: hintH, hintNoHead: hintNoHead, hintCols: hintCols,
+    tableRows: tableRows, itemHTML: itemHTML, itemsHTML: itemsHTML
   };
   if (typeof module !== "undefined" && module.exports) module.exports = API;
   if (typeof window !== "undefined") window.L = API;

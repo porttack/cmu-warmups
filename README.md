@@ -52,7 +52,8 @@ pages unless you want minima's header landing in the middle of a printed workboo
   falls back to a plain prompt rather than throwing.
 - **hint** — `n=N` writing lines for a prompt or vocab term; `w=NNN` display width
   for a figure; `h=NN` cell height in px for a table; `head=0` on a table to
-  treat every row as data (no header row).
+  treat every row as data (no header row); `cols=N` on a figure to sit it
+  side by side with the next N-1 figures that also carry `cols=N`.
 - **figure** — a figure spec; blank on non-figure rows.
 
 ### Type recipes
@@ -144,11 +145,18 @@ oval   cx,cy,w,h[,gray]
 star   cx,cy,r,points[,gray]
 line   x1,y1,x2,y2
 dot    x,y
+text   x,y,LABEL           small bold sans face; use _ for spaces in LABEL
 canvas=NNN    grid=off     options, anywhere in the spec
 ```
 
 Coordinates follow the CMU canvas: origin top-left, y counts **down**, 400 units
 default.
+
+A figure's `hint` can also carry `cols=N`: consecutive `figure` rows that all
+carry the same `cols=N` sit side by side instead of stacking — a flex row in
+the HTML/preview, a single borderless N-column table in both Word builders. A
+figure with no `cols` hint (or a run of only one) renders full width as
+before.
 
 ## Using your own spreadsheet
 

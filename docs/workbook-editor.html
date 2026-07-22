@@ -79,7 +79,7 @@ function itemEditor(sec,it,i){
   return '<div class="item" data-sec="'+sec+'" data-i="'+i+'">'
     +'<select class="it-type">'+typeOptions(it.type)+'</select>'
     +'<div><textarea class="it-content" rows="'+(/\n/.test(it.content||"")?3:2)+'">'+L.esc(it.content||"")+'</textarea>'
-    +'<div class="figrow" style="'+(isFig?"":"display:none")+'"><input class="it-w" placeholder="w=230" value="'+L.esc(it.hint||"w=230")+'"><input class="it-spec" placeholder="figure spec e.g. circle 200,200,60,gray" value="'+L.esc(it.figure||"grid")+'"></div>'
+    +'<div class="figrow" style="'+(isFig?"":"display:none")+'"><input class="it-w" placeholder="w=230" title="Width in px. Add cols=N to place N consecutive figures side by side, e.g. w=230 cols=2" value="'+L.esc(it.hint||"w=230")+'"><input class="it-spec" placeholder="figure spec e.g. circle 200,200,60,gray; text 210,190,A" title="Shapes separated by ; — add text x,y,LABEL to label a point (use _ for spaces)" value="'+L.esc(it.figure||"grid")+'"></div>'
     +'<input class="it-hint" placeholder="n=2 (writing lines)" value="'+(isFig?"":L.esc(it.hint||""))+'" style="'+(isFig?"display:none":"margin-top:4px")+'"></div>'
     +'<div class="mini"><button class="up">↑</button><button class="dn">↓</button><button class="del">✕</button></div></div>';
 }

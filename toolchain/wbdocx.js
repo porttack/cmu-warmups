@@ -98,10 +98,16 @@
   function fullTable(rows) {
     return new Tbl({ width: { size: 100, type: WT.PERCENTAGE }, rows: rows });
   }
+  function borderlessTable(rows) {
+    var none = { style: BS.NONE, size: 0, color: "FFFFFF" };
+    return new Tbl({ width: { size: 100, type: WT.PERCENTAGE }, rows: rows,
+      borders: { top: none, bottom: none, left: none, right: none, insideHorizontal: none, insideVertical: none } });
+  }
 
   function hintN(hint, d) { var m = /n\s*=\s*(\d+)/.exec(hint || ""); return m ? +m[1] : d; }
   function hintW(hint, d) { var m = /w\s*=\s*(\d+)/.exec(hint || ""); return m ? +m[1] : d; }
   function hintH(hint, d) { var m = /h\s*=\s*(\d+)/.exec(hint || ""); return m ? +m[1] : d; }
+  function hintCols(hint) { var m = /cols\s*=\s*(\d+)/.exec(hint || ""); return m ? +m[1] : null; }
 
   /* --------- page pieces (mirror generate.py) --------- */
   function headerBlock(w) {
@@ -189,6 +195,21 @@
       { before: 80, after: 80 });
   }
 
+  /* Consecutive figure items sharing the same cols=N hint sit side by side in
+   * a single borderless N-column table instead of stacking. */
+  function figureRowsTable(items, cols, figMap) {
+    var pct = Math.floor(100 / cols), rows = [];
+    for (var i = 0; i < items.length; i += cols) {
+      var chunk = items.slice(i, i + cols), tds = [];
+      for (var c = 0; c < cols; c++) {
+        var it = chunk[c];
+        tds.push(cell(it ? [figurePara(it.figure || "grid", hintW(it.hint, 230), figMap)] : [para([])], { wpct: pct }));
+      }
+      rows.push(new Row({ children: tds }));
+    }
+    return borderlessTable(rows);
+  }
+
   function itemParas(it, figMap) {
     var t = it.type;
     if (t === "figure") return [figurePara(it.figure || "grid", hintW(it.hint, 230), figMap)];
@@ -204,6 +225,25 @@
     return [para(mdRuns(it.content, { size: THEME.base }), { before: 80, after: 40 })].concat(n > 0 ? writingLines(n) : []);
   }
 
+  /* Render a list of items, grouping consecutive figures that share the same
+   * cols=N hint into one side-by-side table instead of stacking them. */
+  function sectionParas(items, figMap) {
+    var out = [], i = 0;
+    while (i < items.length) {
+      var it = items[i], c = it.type === "figure" ? hintCols(it.hint) : null;
+      if (c && c >= 2) {
+        var run = [it], j = i + 1;
+        while (j < items.length && items[j].type === "figure" && hintCols(items[j].hint) === c) { run.push(items[j]); j++; }
+        out.push(figureRowsTable(run, c, figMap));
+        i = j;
+      } else {
+        itemParas(it, figMap).forEach(function (p) { out.push(p); });
+        i++;
+      }
+    }
+    return out;
+  }
+
   function warmupParas(w, figMap) {
     var out = [];
     headerBlock(w).forEach(function (x) { out.push(x); });
@@ -211,13 +251,13 @@
     var vocab = w.vocab || [];
     if (vocab.length) {                                 // no vocab rows -> no heading, no gap
       out.push(sectionLabel("Vocabulary \u2014 write each in your own words"));
-      vocab.forEach(function (it) { itemParas(it, figMap).forEach(function (p) { out.push(p); }); });
+      sectionParas(vocab, figMap).forEach(function (p) { out.push(p); });
     }
     out.push(para([new PB()]));                         // -> page 2
     out.push(sectionLabel("Part 1 \u2014 core work"));
-    w.part1.forEach(function (it) { itemParas(it, figMap).forEach(function (p) { out.push(p); }); });
+    sectionParas(w.part1, figMap).forEach(function (p) { out.push(p); });
     out.push(part2Bar());
-    w.part2.forEach(function (it) { itemParas(it, figMap).forEach(function (p) { out.push(p); }); });
+    sectionParas(w.part2, figMap).forEach(function (p) { out.push(p); });
     return out;
   }
 

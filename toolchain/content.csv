@@ -272,3 +272,10 @@ csN-demo,1,23,w23,meta,2,ican,I can read a table header row,,
 csN-demo,1,23,w23,part1,3,p,TRACE TABLE — `b.centerX` starts at 100 and `onStep` runs `b.centerX += 20`. Fill in each step.,n=0,
 csN-demo,1,23,w23,part1,4,table,"step|start|1|2|3|4
 centerX|100||||",h=34,
+csN-demo,1,24,w24,meta,0,topic,Figures — labels and columns,,
+csN-demo,1,24,w24,meta,1,ican,I can read a labelled point on a grid,,
+csN-demo,1,24,w24,meta,2,ican,I can use two grids side by side,,
+csN-demo,1,24,w24,part1,3,p,Two grids side by side with lettered dots.,n=0,
+csN-demo,1,24,w24,part1,4,figure,,w=230 cols=2,"grid; dot 350,350; text 360,340,A"
+csN-demo,1,24,w24,part1,5,figure,,w=230 cols=2,grid
+csN-demo,1,24,w24,part2,6,figure,,w=300,"grid; circle 200,200,80,gray; text 200,110,r"

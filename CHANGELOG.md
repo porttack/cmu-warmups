@@ -4,6 +4,33 @@ Notable changes to the workbook generator, one entry per implementation
 session (see the CS0 prep notes for full session scope and ground rules).
 Newest first.
 
+## 2026-07-22 — Session 5: Figure text labels and side-by-side figures
+
+- Extended figure specs with `text x,y,LABEL`: draws `LABEL` at canvas
+  coordinates in a small bold sans face. `_` stands for spaces inside the
+  label, since shapes are whitespace-tokenised. Mirrored across all three
+  figure renderers (`figureSVG`, `drawFigure`, and `figrender.py`'s Pillow
+  path).
+- Added a `cols=N` figure hint: consecutive `figure` items that all carry
+  the same `cols=N` render side by side instead of stacking — a flex row in
+  HTML, a single borderless N-column table in both Word builders.
+- `toolchain/generate.py`'s `hint_n`/`hint_w`/`hint_h` parsing assumed
+  `;`-separated, space-free hint tokens; a combined hint like
+  `w=230 cols=2` silently failed to parse. Switched to the same
+  regex-search approach `wblib.js`/`wbdocx.js` already used, which reads
+  correctly regardless of separator or spacing.
+- Updated the warm-up editor's figure fields with tooltips documenting
+  `cols=` and `text`, since both ride in the existing hint/figure free-text
+  inputs rather than needing new UI.
+- Added a `csN-demo` page (unit 1, `w24`) demonstrating a labelled dot and
+  two grids side by side. Hand-appended to `content.csv` rather than
+  regenerated from `toolchain/build_content.js`, since that script's
+  `demoWarmups` list had already fallen behind `content.csv` (`w21`–`w23`
+  were added directly to the CSV in prior sessions) — regenerating from it
+  would have silently dropped those pages. Added a matching `DEMO(24, ...)`
+  block to `build_content.js` anyway so the rows it would produce are
+  documented and match what's committed, byte for byte.
+
 ## 2026-07-22 — Session 4: `table` item type
 
 - Added `table`: a bordered trace/data table. `content` is rows separated by

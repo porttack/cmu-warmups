@@ -11,6 +11,7 @@ const p = (t, n) => ({ type: "p", content: t, hint: "n=" + (n == null ? 2 : n) }
 const code = (t) => ({ type: "code", content: t });
 const label = (t) => ({ type: "label", content: t });
 const fig = (spec, w) => ({ type: "figure", figure: spec, hint: "w=" + (w || 230) });
+const figCols = (spec, w, cols) => ({ type: "figure", figure: spec, hint: "w=" + (w || 230) + " cols=" + cols });
 const voc = (t) => ({ type: "vocab", content: t, hint: "n=2" });
 const vocN = (t, n) => ({ type: "vocab", content: t, hint: "n=" + n });
 const ln = (n) => ({ type: "lines", hint: "n=" + n });
@@ -265,7 +266,17 @@ const demoWarmups = [
       code("figure = " + NOGRID),
       fig(NOGRID, 140),
       { type: "note", content: "This row's type is note, which no renderer knows. An unrecognised type falls back to a plain prompt, so a typo in the type column never breaks a page.", hint: "n=1" },
-      p("Page 1 of this warm-up has no vocab rows, so no vocabulary heading was printed on it at all.", 0) ] })
+      p("Page 1 of this warm-up has no vocab rows, so no vocabulary heading was printed on it at all.", 0) ] }),
+
+  DEMO(24, "Figures — labels and columns", {
+    ican: ["I can read a labelled point on a grid",
+           "I can use two grids side by side"],
+    part1: [
+      p("Two grids side by side with lettered dots.", 0),
+      figCols("grid; dot 350,350; text 360,340,A", 230, 2),
+      figCols("grid", 230, 2) ],
+    part2: [
+      fig("grid; circle 200,200,80,gray; text 200,110,r", 300) ] })
 ];
 
 let rows = [];

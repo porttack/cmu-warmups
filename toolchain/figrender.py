@@ -10,6 +10,7 @@ and browser-canvas outputs match. Spec grammar (shapes separated by ';'):
     star   cx,cy,r,points[,gray]
     line   x1,y1,x2,y2
     dot    x,y
+    text   x,y,LABEL          LABEL uses _ for spaces; small bold sans face
     canvas=NNN   grid=off     options, anywhere in the spec
 """
 import math
@@ -76,6 +77,9 @@ def parse_figure(spec):
             out["shapes"].append({"t": "line", "x1": f(0), "y1": f(1), "x2": f(2), "y2": f(3)})
         elif kw == "dot":
             out["shapes"].append({"t": "dot", "x": f(0), "y": f(1)})
+        elif kw == "text":
+            out["shapes"].append({"t": "text", "x": f(0), "y": f(1),
+                                  "label": ",".join(args[2:]).replace("_", " ")})
     return out
 
 
@@ -96,6 +100,15 @@ def _font(size):
         except Exception:
             continue
     return ImageFont.load_default()
+
+
+def _font_bold(size):
+    for name in ("DejaVuSans-Bold.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"):
+        try:
+            return ImageFont.truetype(name, size)
+        except Exception:
+            continue
+    return _font(size)
 
 
 def render(spec, px=1500):
@@ -136,6 +149,7 @@ def render(spec, px=1500):
             t += 100
     ink = (17, 17, 17)
     lw = max(1, int(2 * k))
+    text_fnt = _font_bold(int(max(14, C * 0.045) * k))
     for sh in f["shapes"]:
         fill = sh.get("fill")
         if sh["t"] == "circle":
@@ -156,6 +170,8 @@ def render(spec, px=1500):
         elif sh["t"] == "dot":
             r = 5 * k
             d.ellipse([X(sh["x"]) - r, Y(sh["y"]) - r, X(sh["x"]) + r, Y(sh["y"]) + r], fill=ink)
+        elif sh["t"] == "text":
+            d.text((X(sh["x"]), Y(sh["y"])), sh["label"], fill=ink, font=text_fnt, anchor="ls")
     return img
 
 

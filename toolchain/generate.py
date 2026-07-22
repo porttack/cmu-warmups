@@ -259,34 +259,25 @@ def note_box(doc, text):
     _md_run(p, text, size=THEME["base_pt"])
 
 
+def _hint_int(hint, key, default):
+    m = re.search(key + r"\s*=\s*(\d+)", str(hint or ""))
+    return int(m.group(1)) if m else default
+
+
 def hint_n(hint, default):
-    for tok in str(hint or "").replace(" ", "").split(";"):
-        if tok.startswith("n="):
-            try:
-                return int(tok[2:])
-            except ValueError:
-                pass
-    return default
+    return _hint_int(hint, "n", default)
 
 
 def hint_w(hint, default):
-    for tok in str(hint or "").replace(" ", "").split(";"):
-        if tok.startswith("w="):
-            try:
-                return int(tok[2:])
-            except ValueError:
-                pass
-    return default
+    return _hint_int(hint, "w", default)
 
 
 def hint_h(hint, default):
-    for tok in str(hint or "").replace(" ", "").split(";"):
-        if tok.startswith("h="):
-            try:
-                return int(tok[2:])
-            except ValueError:
-                pass
-    return default
+    return _hint_int(hint, "h", default)
+
+
+def hint_cols(hint, default=None):
+    return _hint_int(hint, "cols", default)
 
 
 # table content: rows separated by newline, cells by | (mirrors tableRows() in wblib.js)
@@ -333,6 +324,58 @@ def place_figure(doc, spec, wpx, figcache):
     _no_space(p, before=4, after=4)
     run = p.add_run()
     run.add_picture(figcache[spec], width=Inches(min(6.5, wpx / 96.0)))
+
+
+def _no_table_borders(table):
+    borders = OxmlElement("w:tblBorders")
+    for edge in ("top", "left", "bottom", "right", "insideH", "insideV"):
+        e = OxmlElement("w:" + edge)
+        e.set(qn("w:val"), "none")
+        e.set(qn("w:sz"), "0")
+        e.set(qn("w:space"), "0")
+        e.set(qn("w:color"), "auto")
+        borders.append(e)
+    table._tbl.tblPr.append(borders)
+
+
+def place_figure_row(doc, items, cols, figcache):
+    rows = (len(items) + cols - 1) // cols
+    t = doc.add_table(rows=rows, cols=cols)
+    _set_table_full(t)
+    _no_table_borders(t)
+    for i, it in enumerate(items):
+        spec = it["figure"] or "grid"
+        wpx = hint_w(it["hint"], 230)
+        if spec not in figcache:
+            fd, path = tempfile.mkstemp(suffix=".png")
+            os.close(fd)
+            figrender.render_to(spec, path, px=1500)
+            figcache[spec] = path
+        cell = t.cell(i // cols, i % cols)
+        p = cell.paragraphs[0]
+        _no_space(p, before=4, after=4)
+        run = p.add_run()
+        run.add_picture(figcache[spec], width=Inches(min(6.5, wpx / 96.0)))
+
+
+def render_items(doc, items, figcache):
+    """Render a list of items, grouping consecutive figures that share the
+    same cols=N hint into one side-by-side table instead of stacking them."""
+    i = 0
+    while i < len(items):
+        it = items[i]
+        c = hint_cols(it["hint"]) if it["type"] == "figure" else None
+        if c and c >= 2:
+            run = [it]
+            j = i + 1
+            while j < len(items) and items[j]["type"] == "figure" and hint_cols(items[j]["hint"]) == c:
+                run.append(items[j])
+                j += 1
+            place_figure_row(doc, run, c, figcache)
+            i = j
+        else:
+            render_item(doc, it, figcache)
+            i += 1
 
 
 def render_item(doc, it, figcache):
@@ -459,15 +502,12 @@ def build_warmup(doc, w):
     figcache = doc._figcache
     if w["vocab"]:                     # no vocab rows -> no heading, no gap
         section_label(doc, "Vocabulary \u2014 write each in your own words")
-        for it in w["vocab"]:
-            render_item(doc, it, figcache)
+        render_items(doc, w["vocab"], figcache)
     doc.add_page_break()               # -> page 2
     section_label(doc, "Part 1 \u2014 core work")
-    for it in w["part1"]:
-        render_item(doc, it, figcache)
+    render_items(doc, w["part1"], figcache)
     part2_bar(doc)
-    for it in w["part2"]:
-        render_item(doc, it, figcache)
+    render_items(doc, w["part2"], figcache)
 
 
 def build_unit(rows, course, unit, out_dir):
