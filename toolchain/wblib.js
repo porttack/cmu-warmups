@@ -335,14 +335,19 @@
   function headerHTML(w) {
     return '<table class="hdr"><tr>' +
       '<td class="hc" style="width:52%">Name</td><td class="hc" style="width:28%">Date</td><td class="hc">Period</td></tr>' +
-      '<tr><td class="hc">Partner</td><td class="hc">Points ___ / ___</td><td class="hc">Marked&nbsp;by</td></tr></table>' +
+      '<tr><td class="hc">Partner</td><td class="hc">Points ___ / ___</td><td class="hc">Marked by:&nbsp; ☐ me &nbsp; ☐ partner</td></tr></table>' +
       '<div class="titlebar"><span class="wno">Warm-up ' + esc(w.no) + '</span>&nbsp;&mdash;&nbsp;' + esc(w.topic) + '</div>';
   }
   function stripHTML(w) {
+    // Label on the left, circle-one options flushed right (A/B/C read consistently).
+    function optsRow(label, opts) {
+      return '<div class="srow"><span class="slab">' + label + '</span>' +
+        '<span class="sopt">' + opts.map(esc).join(' &nbsp;&nbsp; ') + '</span></div>';
+    }
     var its = stripItems(w), rows = its.map(function (x) {
       var right;
-      if (x.kind === "pace") right = x.text + ' &nbsp; ' + x.opts.map(function (o) { return "( ) " + o; }).join(" &nbsp; ");
-      else if (x.kind === "ican") right = "☐ got it &nbsp; ☐ shaky &nbsp; ☐ not yet &nbsp;&nbsp; " + esc(x.text);
+      if (x.kind === "pace") right = optsRow(esc(x.text), x.opts);
+      else if (x.kind === "ican") right = optsRow(esc(x.text), ["got it", "shaky", "not yet"]);
       else right = esc(x.text) + '<div class="wline"></div>';
       return '<tr><td class="sL">' + x.L + "</td><td>" + right + "</td></tr>";
     }).join("");
@@ -411,13 +416,15 @@
 "body{margin:0;background:#f4f4f6;font-family:'Segoe UI',Arial,sans-serif;color:var(--ink)}",
 ".page{background:#fff;width:8.5in;min-height:11in;margin:16px auto;padding:0.6in 0.7in;box-shadow:0 1px 6px rgba(0,0,0,.15);page-break-after:always;font-size:var(--fs)}",
 ".hdr{width:100%;border-collapse:collapse;margin-bottom:6px}",
-".hdr td{border:1px solid var(--rule);padding:6px 6px 16px;font-size:10pt;vertical-align:top}",
+".hdr td{border:1px solid var(--rule);padding:16px 6px 5px;font-size:10pt;vertical-align:bottom}",
 ".titlebar{background:var(--accent);color:#fff;padding:7px 10px;font-weight:600;border-radius:2px}",
 ".wno{font-weight:800}",
 ".striphead{font-weight:800;letter-spacing:.06em;margin:12px 0 3px;font-size:10pt}",
 ".strip{width:100%;border-collapse:collapse}",
 ".strip td{border:1px solid var(--rule);padding:6px 8px;font-size:10.5pt;vertical-align:top}",
 ".strip .sL{width:20px;text-align:center;font-weight:800;background:var(--shade)}",
+".srow{display:flex;justify-content:space-between;align-items:baseline;gap:18px}",
+".srow .sopt{white-space:nowrap;text-align:right}",
 ".seclabel{font-weight:700;margin:14px 0 4px;border-bottom:2px solid var(--accent);padding-bottom:2px}",
 ".part2bar{background:var(--shade);border-left:4px solid var(--accent);padding:5px 8px;font-weight:700;margin:14px 0 6px}",
 ".part2bar em{font-weight:400;color:#444}",

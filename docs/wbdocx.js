@@ -60,6 +60,7 @@
     if (o.pageBreakBefore) spec.pageBreakBefore = true;
     if (o.align) spec.alignment = o.align;
     if (o.bullet) spec.bullet = { level: 0 };
+    if (o.tabs) spec.tabStops = o.tabs;
     return new P(spec);
   }
   function writingLines(n, opt) {
@@ -70,7 +71,7 @@
   }
   function cell(children, o) {
     o = o || {};
-    var spec = { children: children, verticalAlign: VA.TOP };
+    var spec = { children: children, verticalAlign: o.vAlign || VA.TOP };
     if (o.wpct) spec.width = { size: o.wpct, type: WT.PERCENTAGE };
     if (o.shade) spec.shading = { fill: o.shade };
     return new Cell(spec);
@@ -84,10 +85,13 @@
 
   /* --------- page pieces (mirror generate.py) --------- */
   function headerBlock(w) {
-    function hc(txt, pct) { return cell([para([run(txt, { size: THEME.small })], { after: 200 })], { wpct: pct }); }
+    // Label bottom-aligned with writing room above it (space before, not after).
+    function hc(txt, pct) {
+      return cell([para([run(txt, { size: THEME.small })], { before: 300 })], { wpct: pct, vAlign: VA.BOTTOM });
+    }
     var t = fullTable([
       new Row({ children: [hc("Name", 52), hc("Date", 28), hc("Period", 20)] }),
-      new Row({ children: [hc("Partner", 52), hc("Points ___ / ___", 28), hc("Marked by", 20)] })
+      new Row({ children: [hc("Partner", 52), hc("Points ___ / ___", 28), hc("Marked by:  ☐ me   ☐ partner", 20)] })
     ]);
     var title = para(
       [run("Warm-up " + w.no + " ", { bold: true, color: "FFFFFF", size: THEME.title }),
@@ -100,15 +104,19 @@
     var its = L.stripItems(w), rows = its.map(function (x) {
       var letterCell = cell([para([run(x.L, { bold: true, size: THEME.strip })], { align: AL.CENTER })],
         { wpct: 5, shade: THEME.shade });
-      var kids, right;
-      if (x.kind === "pace")
-        right = x.text + "   " + x.opts.map(function (o) { return "( ) " + o; }).join("    ");
-      else if (x.kind === "ican")
-        right = "\u2610 got it   \u2610 shaky   \u2610 not yet    " + x.text;
-      else right = x.text;
-      kids = [para([run(right, { size: THEME.strip })], { after: (x.kind === "reflect" || x.kind === "sel") ? 20 : 0 })];
-      if (x.kind === "reflect" || x.kind === "sel")
-        kids.push(para([run(" ")], { lineTwips: THEME.lineTwips, bottom: true, bottomColor: THEME.line, bottomSz: 6 }));
+      var kids;
+      if (x.kind === "pace" || x.kind === "ican") {
+        // label left, circle-one options flushed right via a right tab stop
+        var opts = (x.kind === "pace") ? x.opts.join("    ") : "got it    shaky    not yet";
+        kids = [para([run(x.text, { size: THEME.strip }),
+                      new T({ children: [new D.Tab()], size: THEME.strip }),
+                      run(opts, { size: THEME.strip })],
+                     { tabs: [{ type: D.TabStopType.RIGHT, position: 9360 }] })];
+      } else {
+        kids = [para([run(x.text, { size: THEME.strip })], { after: (x.kind === "reflect" || x.kind === "sel") ? 20 : 0 })];
+        if (x.kind === "reflect" || x.kind === "sel")
+          kids.push(para([run(" ")], { lineTwips: THEME.lineTwips, bottom: true, bottomColor: THEME.line, bottomSz: 6 }));
+      }
       return new Row({ children: [letterCell, cell(kids, { wpct: 95 })] });
     });
     return [para([run("START HERE", { bold: true, size: THEME.strip })], { before: 160, after: 40 }), fullTable(rows)];

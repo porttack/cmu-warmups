@@ -15,8 +15,8 @@ import tempfile
 
 from docx import Document
 from docx.shared import Pt, Inches, RGBColor, Emu
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
-from docx.enum.table import WD_TABLE_ALIGNMENT
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING, WD_TAB_ALIGNMENT
+from docx.enum.table import WD_TABLE_ALIGNMENT, WD_CELL_VERTICAL_ALIGNMENT
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
@@ -128,13 +128,15 @@ def header_block(doc, w):
     t = doc.add_table(rows=2, cols=3)
     t.style = "Table Grid"
     _set_table_full(t)
-    cells = [("Name", "Date", "Period"), ("Partner", "Points ___ / ___", "Marked by")]
+    cells = [("Name", "Date", "Period"), ("Partner", "Points ___ / ___", "Marked by:  ☐ me   ☐ partner")]
     for r in range(2):
         for c in range(3):
             cell = t.cell(r, c)
             cell.width = Inches([3.6, 1.9, 1.5][c])
+            # label bottom-aligned with writing room above it (space before, not after)
+            cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.BOTTOM
             p = cell.paragraphs[0]
-            _no_space(p, after=10)
+            _no_space(p, before=14)
             _run(p, cells[r][c], size=THEME["small_pt"])
     title_bar(doc, w)
 
@@ -146,17 +148,18 @@ def strip_block(doc, w):
 
     ican = w["ican"] if w["ican"] else ["I can start today's warm-up.", "I can ask for help when stuck."]
     no = int(w["no"]) if str(w["no"]).isdigit() else 0
+    # (letter, label, opts, has_line): opts (circle-one words) are flushed right; None = plain row
     items = [
-        ("A", "Pace check — circle one:   ( ) feeling good    ( ) a bit distracted    ( ) stuck — I could use help", False),
-        ("B", "\u2610 got it   \u2610 shaky   \u2610 not yet    " + (ican[0] if len(ican) > 0 else ""), False),
-        ("C", "\u2610 got it   \u2610 shaky   \u2610 not yet    " + (ican[1] if len(ican) > 1 else ""), False),
-        ("D", "Looking back at last class — one thing that clicked, and one thing still fuzzy:", True),
-        ("E", SEL[no % len(SEL)], True),
+        ("A", "Pace check — circle one:", "feeling good    a bit distracted    stuck — I could use help", False),
+        ("B", (ican[0] if len(ican) > 0 else ""), "got it    shaky    not yet", False),
+        ("C", (ican[1] if len(ican) > 1 else ""), "got it    shaky    not yet", False),
+        ("D", "Looking back at last class — one thing that clicked, and one thing still fuzzy:", None, True),
+        ("E", SEL[no % len(SEL)], None, True),
     ]
     t = doc.add_table(rows=len(items), cols=2)
     t.style = "Table Grid"
     _set_table_full(t)
-    for i, (letter, text, has_line) in enumerate(items):
+    for i, (letter, label, opts, has_line) in enumerate(items):
         lc = t.cell(i, 0)
         lc.width = Inches(0.3)
         _cell_shade(lc, THEME["shade"])
@@ -168,7 +171,11 @@ def strip_block(doc, w):
         rc.width = Inches(6.7)
         rp = rc.paragraphs[0]
         _no_space(rp, after=2)
-        _run(rp, text, size=THEME["strip_pt"])
+        if opts is not None:
+            rp.paragraph_format.tab_stops.add_tab_stop(Inches(6.5), WD_TAB_ALIGNMENT.RIGHT)
+            _run(rp, label + "\t" + opts, size=THEME["strip_pt"])
+        else:
+            _run(rp, label, size=THEME["strip_pt"])
         if has_line:
             lnp = rc.add_paragraph()
             _no_space(lnp, line_pt=THEME["line_h_pt"])
