@@ -228,17 +228,22 @@
 
   function figureSVG(spec) {
     var f = parseFigure(spec), C = f.canvas, step = 50;
-    var s = '<svg viewBox="0 0 ' + C + ' ' + C + '" xmlns="http://www.w3.org/2000/svg" width="100%" preserveAspectRatio="xMidYMid meet">';
+    var m = f.grid ? Math.round(C * 0.1) : 0; // margin reserved for axis numbers, outside the box
+    var s = '<svg viewBox="' + (-m) + ' ' + (-m) + ' ' + (C + m) + ' ' + (C + m) + '" xmlns="http://www.w3.org/2000/svg" width="100%" preserveAspectRatio="xMidYMid meet">';
     s += '<rect x="0" y="0" width="' + C + '" height="' + C + '" fill="#ffffff" stroke="#333" stroke-width="1.5"/>';
     if (f.grid) {
       for (var g = step; g < C; g += step) {
-        s += '<line x1="' + g + '" y1="0" x2="' + g + '" y2="' + C + '" stroke="#e2e2e2" stroke-width="1"/>';
-        s += '<line x1="0" y1="' + g + '" x2="' + C + '" y2="' + g + '" stroke="#e2e2e2" stroke-width="1"/>';
+        var major = (g % 200 === 0), quarter = !major && (g % 100 === 0);
+        var sw = major ? 3 : (quarter ? 2 : 1);
+        var col = major ? "#7a7a7a" : (quarter ? "#a3a3a3" : "#e2e2e2");
+        s += '<line x1="' + g + '" y1="0" x2="' + g + '" y2="' + C + '" stroke="' + col + '" stroke-width="' + sw + '"/>';
+        s += '<line x1="0" y1="' + g + '" x2="' + C + '" y2="' + g + '" stroke="' + col + '" stroke-width="' + sw + '"/>';
       }
-      // light ticks at every 100 on the top/left edges
+      // big numbers outside the box at every 100, so they still read once printed
+      var fs = Math.max(14, Math.round(C * 0.05)), lbl = Math.round(m * 0.5);
       for (var t = 100; t < C; t += 100) {
-        s += '<text x="' + (t + 2) + '" y="12" font-size="10" fill="#999" font-family="sans-serif">' + t + '</text>';
-        s += '<text x="2" y="' + (t + 12) + '" font-size="10" fill="#999" font-family="sans-serif">' + t + '</text>';
+        s += '<text x="' + t + '" y="' + (-lbl) + '" font-size="' + fs + '" fill="#555" font-family="sans-serif" text-anchor="middle">' + t + '</text>';
+        s += '<text x="' + (-lbl) + '" y="' + t + '" font-size="' + fs + '" fill="#555" font-family="sans-serif" text-anchor="end" dominant-baseline="middle">' + t + '</text>';
       }
     }
     f.shapes.forEach(function (sh) {
@@ -255,28 +260,39 @@
 
   // Draw the same figure onto a 2D canvas context scaled to `px` (browser + node-canvas)
   function drawFigure(ctx, spec, px) {
-    var f = parseFigure(spec), C = f.canvas, k = px / C, step = 50;
+    var f = parseFigure(spec), C = f.canvas, step = 50;
+    var m = f.grid ? C * 0.1 : 0; // margin reserved for axis numbers, in canvas units
+    var k = px / (C + m), ox = m * k, oy = m * k;
+    function X(x) { return ox + x * k; }
+    function Y(y) { return oy + y * k; }
     ctx.save();
     ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, px, px);
-    ctx.lineWidth = 1.5; ctx.strokeStyle = "#333"; ctx.strokeRect(0.75, 0.75, px - 1.5, px - 1.5);
+    ctx.lineWidth = 1.5; ctx.strokeStyle = "#333"; ctx.strokeRect(ox + 0.75, oy + 0.75, C * k - 1.5, C * k - 1.5);
     if (f.grid) {
-      ctx.lineWidth = 1; ctx.strokeStyle = "#e2e2e2";
       for (var g = step; g < C; g += step) {
-        ctx.beginPath(); ctx.moveTo(g * k, 0); ctx.lineTo(g * k, px); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, g * k); ctx.lineTo(px, g * k); ctx.stroke();
+        var major = (g % 200 === 0), quarter = !major && (g % 100 === 0);
+        ctx.lineWidth = (major ? 3 : quarter ? 2 : 1) * k;
+        ctx.strokeStyle = major ? "#7a7a7a" : (quarter ? "#a3a3a3" : "#e2e2e2");
+        ctx.beginPath(); ctx.moveTo(X(g), oy); ctx.lineTo(X(g), oy + C * k); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(ox, Y(g)); ctx.lineTo(ox + C * k, Y(g)); ctx.stroke();
       }
-      ctx.fillStyle = "#999"; ctx.font = (10 * k) + "px sans-serif";
-      for (var t = 100; t < C; t += 100) { ctx.fillText(String(t), (t + 2) * k, 12 * k); ctx.fillText(String(t), 2 * k, (t + 12) * k); }
+      var fs = Math.max(14, C * 0.05) * k, gap = m * 0.5 * k;
+      ctx.fillStyle = "#555"; ctx.font = fs + "px sans-serif";
+      ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+      for (var t = 100; t < C; t += 100) { ctx.fillText(String(t), X(t), oy - gap * 0.4); }
+      ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      for (var t2 = 100; t2 < C; t2 += 100) { ctx.fillText(String(t2), ox - gap * 0.4, Y(t2)); }
+      ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
     }
     f.shapes.forEach(function (sh) {
       ctx.lineWidth = 2 * k; ctx.strokeStyle = "#111";
       function fillstroke() { if (sh.fill) { ctx.fillStyle = sh.fill; ctx.fill(); } ctx.stroke(); }
-      if (sh.t === "circle") { ctx.beginPath(); ctx.arc(sh.cx * k, sh.cy * k, sh.r * k, 0, 2 * Math.PI); fillstroke(); }
-      else if (sh.t === "rect") { ctx.beginPath(); ctx.rect(sh.x * k, sh.y * k, sh.w * k, sh.h * k); fillstroke(); }
-      else if (sh.t === "oval") { ctx.beginPath(); ctx.ellipse(sh.cx * k, sh.cy * k, (sh.w / 2) * k, (sh.h / 2) * k, 0, 0, 2 * Math.PI); fillstroke(); }
-      else if (sh.t === "star") { var pp = starPoints(sh.cx, sh.cy, sh.r, sh.pts); ctx.beginPath(); pp.forEach(function (p, i) { var x = p[0] * k, y = p[1] * k; if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); }); ctx.closePath(); fillstroke(); }
-      else if (sh.t === "line") { ctx.lineWidth = 2.5 * k; ctx.beginPath(); ctx.moveTo(sh.x1 * k, sh.y1 * k); ctx.lineTo(sh.x2 * k, sh.y2 * k); ctx.stroke(); }
-      else if (sh.t === "dot") { ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(sh.x * k, sh.y * k, 5 * k, 0, 2 * Math.PI); ctx.fill(); }
+      if (sh.t === "circle") { ctx.beginPath(); ctx.arc(X(sh.cx), Y(sh.cy), sh.r * k, 0, 2 * Math.PI); fillstroke(); }
+      else if (sh.t === "rect") { ctx.beginPath(); ctx.rect(X(sh.x), Y(sh.y), sh.w * k, sh.h * k); fillstroke(); }
+      else if (sh.t === "oval") { ctx.beginPath(); ctx.ellipse(X(sh.cx), Y(sh.cy), (sh.w / 2) * k, (sh.h / 2) * k, 0, 0, 2 * Math.PI); fillstroke(); }
+      else if (sh.t === "star") { var pp = starPoints(sh.cx, sh.cy, sh.r, sh.pts); ctx.beginPath(); pp.forEach(function (p, i) { var x = X(p[0]), y = Y(p[1]); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); }); ctx.closePath(); fillstroke(); }
+      else if (sh.t === "line") { ctx.lineWidth = 2.5 * k; ctx.beginPath(); ctx.moveTo(X(sh.x1), Y(sh.y1)); ctx.lineTo(X(sh.x2), Y(sh.y2)); ctx.stroke(); }
+      else if (sh.t === "dot") { ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(X(sh.x), Y(sh.y), 5 * k, 0, 2 * Math.PI); ctx.fill(); }
     });
     ctx.restore();
   }

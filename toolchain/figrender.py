@@ -102,45 +102,60 @@ def render(spec, px=1500):
     """Return a PIL Image of the spec at `px` square (high-res)."""
     f = parse_figure(spec)
     C = f["canvas"]
-    k = px / C
+    m = C * 0.1 if f["grid"] else 0  # margin reserved for axis numbers, in canvas units
+    k = px / (C + m)
+    ox = oy = m * k
+
+    def X(x):
+        return ox + x * k
+
+    def Y(y):
+        return oy + y * k
+
     img = Image.new("RGB", (px, px), "white")
     d = ImageDraw.Draw(img)
-    d.rectangle([0, 0, px - 1, px - 1], outline=(51, 51, 51), width=max(1, int(1.5 * k)))
+    d.rectangle([ox, oy, ox + C * k - 1, oy + C * k - 1], outline=(51, 51, 51), width=max(1, int(1.5 * k)))
     step = 50
     if f["grid"]:
         g = step
         while g < C:
-            d.line([(g * k, 0), (g * k, px)], fill=(226, 226, 226), width=max(1, int(k)))
-            d.line([(0, g * k), (px, g * k)], fill=(226, 226, 226), width=max(1, int(k)))
+            major = g % 200 == 0
+            quarter = not major and g % 100 == 0
+            color = (122, 122, 122) if major else (163, 163, 163) if quarter else (226, 226, 226)
+            width = 3 if major else 2 if quarter else 1
+            d.line([(X(g), oy), (X(g), oy + C * k)], fill=color, width=max(1, int(width * k)))
+            d.line([(ox, Y(g)), (ox + C * k, Y(g))], fill=color, width=max(1, int(width * k)))
             g += step
-        fnt = _font(int(10 * k))
+        fnt = _font(int(max(14, C * 0.05) * k))
+        gap = m * 0.5 * k
         t = 100
         while t < C:
-            d.text(((t + 2) * k, 2 * k), str(t), fill=(153, 153, 153), font=fnt)
-            d.text((2 * k, (t + 2) * k), str(t), fill=(153, 153, 153), font=fnt)
+            tw = d.textlength(str(t), font=fnt)
+            d.text((X(t) - tw / 2, oy - gap * 1.1), str(t), fill=(85, 85, 85), font=fnt)
+            d.text((ox - gap * 1.1 - tw, Y(t) - gap * 0.5), str(t), fill=(85, 85, 85), font=fnt)
             t += 100
     ink = (17, 17, 17)
     lw = max(1, int(2 * k))
     for sh in f["shapes"]:
         fill = sh.get("fill")
         if sh["t"] == "circle":
-            x, y, r = sh["cx"] * k, sh["cy"] * k, sh["r"] * k
+            x, y, r = X(sh["cx"]), Y(sh["cy"]), sh["r"] * k
             d.ellipse([x - r, y - r, x + r, y + r], fill=fill, outline=ink, width=lw)
         elif sh["t"] == "rect":
-            d.rectangle([sh["x"] * k, sh["y"] * k, (sh["x"] + sh["w"]) * k, (sh["y"] + sh["h"]) * k],
+            d.rectangle([X(sh["x"]), Y(sh["y"]), X(sh["x"] + sh["w"]), Y(sh["y"] + sh["h"])],
                         fill=fill, outline=ink, width=lw)
         elif sh["t"] == "oval":
-            cx, cy, w, h = sh["cx"] * k, sh["cy"] * k, sh["w"] * k / 2, sh["h"] * k / 2
+            cx, cy, w, h = X(sh["cx"]), Y(sh["cy"]), sh["w"] * k / 2, sh["h"] * k / 2
             d.ellipse([cx - w, cy - h, cx + w, cy + h], fill=fill, outline=ink, width=lw)
         elif sh["t"] == "star":
-            pts = [(x * k, y * k) for (x, y) in _star_points(sh["cx"], sh["cy"], sh["r"], sh["pts"])]
+            pts = [(X(x), Y(y)) for (x, y) in _star_points(sh["cx"], sh["cy"], sh["r"], sh["pts"])]
             d.polygon(pts, fill=fill, outline=ink)
             d.line(pts + [pts[0]], fill=ink, width=lw)
         elif sh["t"] == "line":
-            d.line([(sh["x1"] * k, sh["y1"] * k), (sh["x2"] * k, sh["y2"] * k)], fill=ink, width=max(1, int(2.5 * k)))
+            d.line([(X(sh["x1"]), Y(sh["y1"])), (X(sh["x2"]), Y(sh["y2"]))], fill=ink, width=max(1, int(2.5 * k)))
         elif sh["t"] == "dot":
             r = 5 * k
-            d.ellipse([sh["x"] * k - r, sh["y"] * k - r, sh["x"] * k + r, sh["y"] * k + r], fill=ink)
+            d.ellipse([X(sh["x"]) - r, Y(sh["y"]) - r, X(sh["x"]) + r, Y(sh["y"]) + r], fill=ink)
     return img
 
 
