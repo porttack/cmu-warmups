@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Warm-up editor</title>
+<script src="./wblib.js"></script>
+<style id="wbcss"></style>
+<style>
+  body{margin:0;font-family:'Segoe UI',Arial,sans-serif;color:#111;background:#eef0f3}
+  .top{background:#1f3a5f;color:#fff;padding:8px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;position:sticky;top:0;z-index:5}
+  .top select,.top button{font:inherit;font-size:13px;padding:5px 8px;border-radius:5px;border:1px solid #99a}
+  .top button{background:#ffd45e;border:0;font-weight:600;cursor:pointer}
+  .top .sp{flex:1}
+  .wrap{display:grid;grid-template-columns:minmax(360px,1fr) minmax(360px,1fr);gap:0}
+  .edit{padding:12px 14px;overflow:auto;height:calc(100vh - 46px)}
+  .prev{background:#f4f4f6;overflow:auto;height:calc(100vh - 46px);border-left:1px solid #ccd}
+  .sec{background:#fff;border:1px solid #ccd;border-radius:8px;padding:10px 12px;margin:0 0 12px}
+  .sec h3{margin:0 0 8px;font-size:13px;color:#1f3a5f;letter-spacing:.03em}
+  .item{display:grid;grid-template-columns:92px 1fr auto;gap:6px;align-items:start;margin:6px 0;padding:6px;border:1px solid #e3e6ee;border-radius:6px;background:#fbfcff}
+  .item select,.item input,.item textarea{font:inherit;font-size:13px;width:100%;box-sizing:border-box;border:1px solid #bcc;border-radius:4px;padding:4px}
+  .item textarea{resize:vertical;font-family:inherit}
+  .figrow{display:flex;gap:6px;margin-top:4px}
+  .mini button{border:1px solid #bcc;background:#fff;border-radius:4px;cursor:pointer;font-size:12px;line-height:1;padding:3px 5px;display:block;margin:2px 0}
+  .addbtn{font:inherit;font-size:12px;border:1px dashed #99a;background:#fff;border-radius:6px;padding:5px 8px;cursor:pointer;color:#333}
+  .fld{margin:6px 0}.fld label{font-size:12px;color:#555;display:block;margin-bottom:2px}
+  .fld input,.fld textarea{font:inherit;width:100%;box-sizing:border-box;border:1px solid #bcc;border-radius:5px;padding:5px}
+
+@media print{.noprint{display:none !important}}
+</style>
+</head>
+<body>
+<div class="top">
+  <select id="selCourse"></select>
+  <select id="selUnit"></select>
+  <select id="selWarm"></select>
+  <button id="btnNew">+ New warm-up</button>
+  <span class="sp"></span>
+  <button id="btnFile">Upload CSV…</button>
+  <input id="file" type="file" accept=".csv" style="display:none">
+  <button id="btnExport">Export content.csv</button>
+</div>
+<div class="wrap">
+  <div class="edit" id="edit"></div>
+  <div class="prev" id="preview"></div>
+</div>
+<script>
+var $=function(s){return document.querySelector(s);};
+document.getElementById("wbcss").textContent=L.styleCSS();
+var rows=[],cur=null;
+
+function boot(text){ rows=L.parseCSV(text); cur=null; fillCourse(); }
+fetch("./content.csv").then(function(r){return r.ok?r.text():"course,unit,warmup_no,page,section,seq,type,content,hint,figure\n";}).then(boot).catch(function(){boot("course,unit,warmup_no,page,section,seq,type,content,hint,figure\n");});
+
+function fillCourse(){ var s=$("#selCourse"); s.innerHTML=""; (L.courses(rows).length?L.courses(rows):["cs1"]).forEach(function(c){s.add(new Option(c.toUpperCase(),c));}); fillUnit(); }
+function fillUnit(){ var c=$("#selCourse").value,s=$("#selUnit");s.innerHTML=""; (L.units(rows,c).length?L.units(rows,c):["1"]).forEach(function(u){s.add(new Option("Unit "+u,u));}); fillWarm(); }
+function fillWarm(sel){ var c=$("#selCourse").value,u=$("#selUnit").value,s=$("#selWarm");s.innerHTML="";
+  L.warmPages(rows,c,u).forEach(function(p){var w=L.warmupFromRows(L.pageRows(rows,c,u,p));s.add(new Option("Warm-up "+w.no+" — "+w.topic,p));});
+  if(sel)s.value=sel; if(s.value){cur={course:c,unit:u,page:s.value};} else cur=null; renderAll();
+}
+
+function model(){ if(!cur)return null; return L.warmupFromRows(L.pageRows(rows,cur.course,cur.unit,cur.page)); }
+function writeBack(w){ // replace this page's rows with rows from edited warm-up
+  var fresh=L.rowsFromWarmup(w), out=[], inserted=false;
+  rows.forEach(function(r){ if(r.course===cur.course&&String(r.unit)===String(cur.unit)&&r.page===cur.page){ if(!inserted){fresh.forEach(function(x){out.push(x);});inserted=true;} } else out.push(r); });
+  if(!inserted)fresh.forEach(function(x){out.push(x);});
+  rows=out;
+}
+
+var TYPES=["p","code","figure","lines","label"];
+function itemEditor(sec,it,i){
+  var isFig=it.type==="figure";
+  return '<div class="item" data-sec="'+sec+'" data-i="'+i+'">'
+    +'<select class="it-type">'+TYPES.map(function(t){return '<option '+(t===it.type?"selected":"")+'>'+t+'</option>';}).join("")+'</select>'
+    +'<div><textarea class="it-content" rows="'+(/\n/.test(it.content||"")?3:2)+'">'+L.esc(it.content||"")+'</textarea>'
+    +'<div class="figrow" style="'+(isFig?"":"display:none")+'"><input class="it-w" placeholder="w=230" value="'+L.esc(it.hint||"w=230")+'"><input class="it-spec" placeholder="figure spec e.g. circle 200,200,60,gray" value="'+L.esc(it.figure||"grid")+'"></div>'
+    +'<input class="it-hint" placeholder="n=2 (writing lines)" value="'+(isFig?"":L.esc(it.hint||""))+'" style="'+(isFig?"display:none":"margin-top:4px")+'"></div>'
+    +'<div class="mini"><button class="up">↑</button><button class="dn">↓</button><button class="del">✕</button></div></div>';
+}
+function sectionEditor(title,sec,items){
+  return '<div class="sec"><h3>'+title+'</h3><div class="list" data-sec="'+sec+'">'+items.map(function(it,i){return itemEditor(sec,it,i);}).join("")+'</div><button class="addbtn" data-add="'+sec+'">+ add item</button></div>';
+}
+function renderEditor(){
+  var w=model(); var e=$("#edit");
+  if(!w){ e.innerHTML='<div class="sec">No warm-up selected. Pick one above or click <b>+ New warm-up</b>.</div>'; $("#preview").innerHTML=""; return; }
+  e.innerHTML=''
+    +'<div class="sec"><h3>Header</h3>'
+    +'<div class="fld"><label>Warm-up number</label><input id="f-no" value="'+L.esc(w.no)+'"></div>'
+    +'<div class="fld"><label>Topic (title)</label><input id="f-topic" value="'+L.esc(w.topic)+'"></div>'
+    +'<div class="fld"><label>I can… (B)</label><input id="f-ican0" value="'+L.esc(w.ican[0]||"")+'"></div>'
+    +'<div class="fld"><label>I can… (C)</label><input id="f-ican1" value="'+L.esc(w.ican[1]||"")+'"></div></div>'
+    +sectionEditor("Vocabulary","vocab",w.vocab)
+    +sectionEditor("Part 1 — core","part1",w.part1)
+    +sectionEditor("Part 2 — stretch","part2",w.part2);
+  wireEditor();
+}
+function collect(){
+  var w=model();
+  w.no=$("#f-no").value; w.topic=$("#f-topic").value; w.ican=[$("#f-ican0").value,$("#f-ican1").value];
+  ["vocab","part1","part2"].forEach(function(sec){
+    var list=document.querySelector('.list[data-sec="'+sec+'"]'), items=[];
+    list.querySelectorAll(".item").forEach(function(node){
+      var type=node.querySelector(".it-type").value, content=node.querySelector(".it-content").value;
+      if(type==="figure") items.push({type:type,content:content,hint:node.querySelector(".it-w").value,figure:node.querySelector(".it-spec").value});
+      else if(type==="vocab"||sec==="vocab") items.push({type:"vocab",content:content,hint:node.querySelector(".it-hint").value||"n=2"});
+      else items.push({type:type,content:content,hint:node.querySelector(".it-hint").value});
+    });
+    w[sec]=items;
+  });
+  // vocab items keep type vocab
+  w.vocab=w.vocab.map(function(it){return {type:"vocab",content:it.content,hint:it.hint||"n=2"};});
+  writeBack(w); return w;
+}
+function renderPreview(){ var w=model(); $("#preview").innerHTML=w?L.warmupHTML(w,{}):""; }
+function renderAll(){ renderEditor(); renderPreview(); }
+
+function wireEditor(){
+  $("#edit").querySelectorAll("input,textarea,select").forEach(function(el){
+    el.addEventListener("input",function(){ collect(); renderPreview(); syncFigRows(); });
+  });
+  $("#edit").querySelectorAll(".addbtn").forEach(function(b){ b.onclick=function(){ var sec=b.getAttribute("data-add"); var w=collect(); w[sec].push(sec==="vocab"?{type:"vocab",content:"term",hint:"n=2"}:{type:"p",content:"New prompt.",hint:"n=2"}); writeBack(w); renderAll(); }; });
+  $("#edit").querySelectorAll(".item .del").forEach(function(b){ b.onclick=function(){ var it=b.closest(".item"),sec=it.getAttribute("data-sec"),i=+it.getAttribute("data-i"); var w=collect(); w[sec].splice(i,1); writeBack(w); renderAll(); }; });
+  $("#edit").querySelectorAll(".item .up,.item .dn").forEach(function(b){ b.onclick=function(){ var it=b.closest(".item"),sec=it.getAttribute("data-sec"),i=+it.getAttribute("data-i"),d=b.classList.contains("up")?-1:1; var w=collect(),j=i+d; if(j<0||j>=w[sec].length)return; var t=w[sec][i];w[sec][i]=w[sec][j];w[sec][j]=t; writeBack(w); renderAll(); }; });
+}
+function syncFigRows(){ $("#edit").querySelectorAll(".item").forEach(function(node){ var isFig=node.querySelector(".it-type").value==="figure"; node.querySelector(".figrow").style.display=isFig?"flex":"none"; var h=node.querySelector(".it-hint"); if(h)h.style.display=isFig?"none":"block"; }); }
+
+$("#selCourse").onchange=function(){fillUnit();};
+$("#selUnit").onchange=function(){fillWarm();};
+$("#selWarm").onchange=function(){cur={course:$("#selCourse").value,unit:$("#selUnit").value,page:$("#selWarm").value};renderAll();};
+$("#btnNew").onclick=function(){ var c=$("#selCourse").value||"cs1",u=+$("#selUnit").value||1;
+  var nos=L.warmPages(rows,c,String(u)).map(function(p){return +L.warmupFromRows(L.pageRows(rows,c,String(u),p)).no||0;});
+  var no=(nos.length?Math.max.apply(null,nos):(u-1)*10)+1; var w=L.blankWarmup(c,u,no);
+  while(L.pageRows(rows,c,String(u),w.page).length)w.page+="x";
+  rows=rows.concat(L.rowsFromWarmup(w)); fillWarm(w.page); };
+$("#btnExport").onclick=function(){ if(cur)collect(); var blob=new Blob([L.toCSV(rows,L.COLS)],{type:"text/csv"}); var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="content.csv"; a.click(); URL.revokeObjectURL(a.href); };
+$("#btnFile").onclick=function(){$("#file").click();};
+$("#file").onchange=function(e){var f=e.target.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){boot(rd.result);};rd.readAsText(f);};
+</script>
+<div style="text-align:center;font:12px 'Segoe UI',Arial,sans-serif;color:#667;padding:14px 12px 22px" class="noprint"><a href="./" style="color:#1f3a5f">← All workbook tools</a> &nbsp;·&nbsp; Independent project — not affiliated with or endorsed by Carnegie Mellon University.</div>
+</body>
+</html>

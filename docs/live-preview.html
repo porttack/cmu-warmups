@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live preview</title>
+<script src="./wblib.js"></script>
+<style id="wbcss"></style>
+<style>
+  body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:#eef0f3;color:#111}
+  .top{background:#1f3a5f;color:#fff;padding:8px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;position:sticky;top:0;z-index:5}
+  .top input[type=url]{min-width:260px}
+  .top input,.top select,.top button{font:inherit;font-size:13px;padding:5px 8px;border-radius:5px;border:1px solid #99a}
+  .top button{background:#ffd45e;border:0;font-weight:600;cursor:pointer}
+  .status{font-size:12px;opacity:.85;margin-left:auto}
+  #preview{padding:8px 0 40px}
+
+@media print{.noprint{display:none !important}}
+</style>
+</head>
+<body>
+<div class="top">
+  <input id="url" type="url" placeholder="published Google Sheet CSV URL">
+  <button id="load">Load</button>
+  <select id="course"></select><select id="unit"></select><select id="warm"></select>
+  <label style="font-size:12px">every <input id="secs" type="number" min="10" value="60" style="width:56px"> s</label>
+  <span class="status" id="status">enter a published Sheet CSV URL, or it will use bundled content.csv</span>
+</div>
+<div id="preview"></div>
+<script>
+var $=function(s){return document.querySelector(s);};
+document.getElementById("wbcss").textContent=L.styleCSS();
+var rows=[],timer=null,SHEET="";
+
+function status(m){$("#status").textContent=m;}
+function fill(){ var cs=$("#course");cs.innerHTML="";L.courses(rows).forEach(function(c){cs.add(new Option(c.toUpperCase(),c));}); fillU(); }
+function fillU(){ var c=$("#course").value,us=$("#unit");us.innerHTML="";L.units(rows,c).forEach(function(u){us.add(new Option("Unit "+u,u));}); fillW(); }
+function fillW(){ var c=$("#course").value,u=$("#unit").value,ws=$("#warm");var keep=ws.value;ws.innerHTML="";
+  L.warmPages(rows,c,u).forEach(function(p){var w=L.warmupFromRows(L.pageRows(rows,c,u,p));ws.add(new Option("Warm-up "+w.no+" — "+w.topic,p));});
+  if(keep)ws.value=keep; render(); }
+function render(){ var c=$("#course").value,u=$("#unit").value,p=$("#warm").value; if(!p){$("#preview").innerHTML="";return;}
+  $("#preview").innerHTML=L.warmupHTML(L.warmupFromRows(L.pageRows(rows,c,u,p)),{}); }
+
+function apply(text,src){ var keepC=$("#course").value,keepU=$("#unit").value,keepW=$("#warm").value;
+  rows=L.parseCSV(text); fill();
+  if(keepC){$("#course").value=keepC;fillU();} if(keepU){$("#unit").value=keepU;fillW();} if(keepW){$("#warm").value=keepW;render();}
+  status("updated from "+src+" at "+new Date().toLocaleTimeString()); }
+function pull(){ var url=SHEET;
+  if(!url){ fetch("./content.csv").then(function(r){return r.text();}).then(function(t){apply(t,"bundled");}).catch(function(){status("no content available");}); return; }
+  fetch(url,{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error(r.status);return r.text();}).then(function(t){apply(t,"Sheet");}).catch(function(e){status("fetch failed: "+e.message);}); }
+function schedule(){ if(timer)clearInterval(timer); var s=Math.max(10,+$("#secs").value||60); timer=setInterval(pull,s*1000); }
+
+$("#load").onclick=function(){ SHEET=$("#url").value.trim(); pull(); schedule(); };
+$("#course").onchange=fillU; $("#unit").onchange=fillW; $("#warm").onchange=render;
+$("#secs").onchange=schedule;
+pull(); schedule();
+</script>
+<div style="text-align:center;font:12px 'Segoe UI',Arial,sans-serif;color:#667;padding:14px 12px 22px" class="noprint"><a href="./" style="color:#1f3a5f">← All workbook tools</a> &nbsp;·&nbsp; Independent project — not affiliated with or endorsed by Carnegie Mellon University.</div>
+</body>
+</html>

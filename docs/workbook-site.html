@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS Workbook — build &amp; download</title>
+<script src="./wblib.js"></script>
+<script src="./lib/docx.iife.js"></script>
+<script src="./wbdocx.js"></script>
+<style id="wbcss"></style>
+<style>
+  :root{--bar:#1f3a5f;--bar2:#31527d}
+  body{margin:0;font-family:'Segoe UI',Arial,sans-serif;color:#111;background:#f4f4f6}
+  .bar{position:sticky;top:0;z-index:10;background:var(--bar);color:#fff;padding:10px 16px;box-shadow:0 1px 6px rgba(0,0,0,.25)}
+  .bar h1{font-size:16px;margin:0 0 8px;font-weight:700;letter-spacing:.02em}
+  .row{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+  .row label{font-size:12px;opacity:.9}
+  .grp{display:flex;align-items:center;gap:6px;background:var(--bar2);padding:5px 9px;border-radius:6px}
+  select,input[type=url]{font:inherit;font-size:13px;padding:4px 6px;border-radius:4px;border:1px solid #99a;background:#fff;color:#111}
+  input[type=url]{min-width:230px}
+  .btn{font:inherit;font-size:13px;font-weight:600;padding:6px 12px;border:0;border-radius:6px;cursor:pointer;background:#fff;color:var(--bar)}
+  .btn.alt{background:#ffd45e;color:#3a2f00}
+  .btn:active{transform:translateY(1px)}
+  .radios{display:flex;gap:2px;background:var(--bar2);border-radius:6px;overflow:hidden}
+  .radios label{padding:6px 10px;cursor:pointer;font-size:13px}
+  .radios input{display:none}
+  .radios input:checked + span{background:#fff;color:var(--bar);border-radius:4px;padding:3px 6px}
+  .opts{margin-top:8px}
+  .opts .grp label{color:#fff}
+  .status{font-size:12px;opacity:.85;margin-top:6px}
+  #preview{padding:8px 0 40px}
+  .empty{max-width:640px;margin:60px auto;background:#fff;border:1px solid #dde;border-radius:8px;padding:24px;color:#333}
+  @media print{ .bar{display:none} #preview{padding:0} body{background:#fff} }
+
+@media print{.noprint{display:none !important}}
+</style>
+</head>
+<body>
+<div class="bar noprint">
+  <h1>CS Workbook — build &amp; download</h1>
+  <div class="row">
+    <div class="grp">
+      <label>Course</label><select id="course"></select>
+    </div>
+    <div class="grp">
+      <label>Show</label>
+      <div class="radios" id="scope">
+        <label><input type="radio" name="scope" value="warmup"><span>Warm-up</span></label>
+        <label><input type="radio" name="scope" value="unit" checked><span>Unit</span></label>
+        <label><input type="radio" name="scope" value="course"><span>Course</span></label>
+      </div>
+    </div>
+    <div class="grp" id="unitGrp"><label>Unit</label><select id="unit"></select></div>
+    <div class="grp" id="warmGrp" style="display:none"><label>Warm-up</label><select id="warm"></select></div>
+    <button class="btn" id="dlpdf">Download PDF</button>
+    <button class="btn alt" id="dldocx">Download DOCX</button>
+  </div>
+  <div class="row opts">
+    <div class="grp"><label>Writing-line height</label><input type="range" id="lineh" min="22" max="48" value="30"><span id="linehV" style="font-size:12px">30px</span></div>
+    <div class="grp"><label>Text size</label><input type="range" id="fs" min="11" max="15" value="13"><span id="fsV" style="font-size:12px">13pt</span></div>
+    <div class="grp"><label>Accent</label><input type="color" id="accent" value="#1f3a5f"></div>
+    <div class="grp"><label>Figure width</label><input type="range" id="figmax" min="170" max="320" value="230"><span id="figmaxV" style="font-size:12px">230px</span></div>
+    <div class="grp"><label>Source</label><input type="url" id="sheet" placeholder="published Google Sheet CSV URL"><button class="btn" id="loadsheet">Load</button><button class="btn" id="loadfile">Upload…</button><input type="file" id="file" accept=".csv" style="display:none"></div>
+  </div>
+  <div class="status" id="status">loading…</div>
+</div>
+<div id="preview"><div class="empty">Loading content…</div></div>
+
+<script>
+/* ---- CONFIG: set this to YOUR published Google Sheet CSV URL ----
+   File ▸ Share ▸ Publish to web ▸ (this sheet) ▸ Comma-separated values (.csv)
+   Leave as-is to fall back to the bundled content.csv committed next to this page. */
+var SHEET_CSV_URL = ""; // e.g. "https://docs.google.com/spreadsheets/d/e/XXX/pub?gid=0&single=true&output=csv"
+
+var $ = function (s) { return document.querySelector(s); };
+var rows = [], ready = false;
+
+document.getElementById("wbcss").textContent = L.styleCSS();
+
+function status(msg) { $("#status").textContent = msg; }
+
+/* ---------- load content ---------- */
+function setRows(text, srcLabel) {
+  rows = L.parseCSV(text);
+  ready = rows.length > 0;
+  if (!ready) { status("no rows found in " + srcLabel); return; }
+  populateCourses();
+  status(rows.length + " rows loaded from " + srcLabel + " · " + L.courses(rows).join(", "));
+  render();
+}
+function loadBundled() {
+  fetch("./content.csv").then(function (r) {
+    if (!r.ok) throw new Error(r.status);
+    return r.text();
+  }).then(function (t) { setRows(t, "bundled content.csv"); })
+    .catch(function () {
+      status("Could not load content. Paste a published Sheet URL above, or upload a CSV.");
+      $("#preview").innerHTML = '<div class="empty"><b>No content loaded.</b><br>Set <code>SHEET_CSV_URL</code> in this file to your published Google Sheet, keep a <code>content.csv</code> next to this page, or use <b>Upload…</b>.</div>';
+    });
+}
+function loadUrl(url) {
+  status("fetching sheet…");
+  fetch(url).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(function (t) { setRows(t, "Google Sheet"); })
+    .catch(function (e) { status("sheet load failed (" + e.message + ") — using bundled content"); loadBundled(); });
+}
+
+/* ---------- pickers ---------- */
+function populateCourses() {
+  var sel = $("#course"); sel.innerHTML = "";
+  L.courses(rows).forEach(function (c) { sel.add(new Option(c.toUpperCase(), c)); });
+  populateUnits();
+}
+function populateUnits() {
+  var c = $("#course").value, sel = $("#unit"); sel.innerHTML = "";
+  L.units(rows, c).forEach(function (u) { sel.add(new Option("Unit " + u, u)); });
+  populateWarms();
+}
+function populateWarms() {
+  var c = $("#course").value, u = $("#unit").value, sel = $("#warm"); sel.innerHTML = "";
+  L.warmPages(rows, c, u).forEach(function (p) {
+    var w = L.warmupFromRows(L.pageRows(rows, c, u, p));
+    sel.add(new Option("Warm-up " + w.no + " — " + w.topic, p));
+  });
+}
+function currentScope() {
+  var s = document.querySelector('input[name=scope]:checked').value;
+  return { scope: s, course: $("#course").value, unit: $("#unit").value, page: $("#warm").value };
+}
+
+/* ---------- options -> CSS vars ---------- */
+function applyOpts() {
+  var root = document.documentElement.style;
+  root.setProperty("--line-h", $("#lineh").value + "px");
+  root.setProperty("--fs", $("#fs").value + "pt");
+  root.setProperty("--accent", $("#accent").value);
+  root.setProperty("--fig-max", $("#figmax").value + "px");
+  $("#linehV").textContent = $("#lineh").value + "px";
+  $("#fsV").textContent = $("#fs").value + "pt";
+  $("#figmaxV").textContent = $("#figmax").value + "px";
+}
+
+/* ---------- render preview ---------- */
+function render() {
+  if (!ready) return;
+  applyOpts();
+  $("#preview").innerHTML = L.scopeHTML(rows, currentScope(), {});
+}
+
+/* ---------- figures -> figMap (canvas raster, high-res) ---------- */
+function rasterize(spec, px) {
+  var c = document.createElement("canvas"); c.width = c.height = px;
+  L.drawFigure(c.getContext("2d"), spec, px);
+  return c.toDataURL("image/png").split(",")[1];
+}
+function buildFigMap(sel) {
+  var map = {};
+  WBDOCX.figKeysForScope(rows, sel).forEach(function (s) { map[s] = { data: rasterize(s, 1500) }; });
+  return map;
+}
+
+/* ---------- downloads ---------- */
+function scopeName(sel) {
+  var c = sel.course.toUpperCase();
+  if (sel.scope === "warmup") { var w = L.warmupFromRows(L.pageRows(rows, sel.course, sel.unit, sel.page)); return c + "-Warmup" + w.no; }
+  if (sel.scope === "course") return c + "-Full";
+  return c + "-Unit" + sel.unit;
+}
+$("#dlpdf").onclick = function () { window.print(); };
+$("#dldocx").onclick = function () {
+  if (!ready) return;
+  var sel = currentScope();
+  status("rendering figures + building Word file…");
+  setTimeout(function () {
+    try {
+      var figMap = buildFigMap(sel);
+      var lineHeightPt = +$("#lineh").value * 0.75; // screen px (96dpi) -> pt
+      var doc = WBDOCX.buildDoc(rows, { scope: sel.scope, course: sel.course, unit: sel.unit, page: sel.page, figMap: figMap, options: { lineHeightPt: lineHeightPt } });
+      docx.Packer.toBlob(doc).then(function (blob) {
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = scopeName(sel) + "-Workbook.docx";
+        a.click(); URL.revokeObjectURL(a.href);
+        status("downloaded " + a.download);
+      });
+    } catch (e) { status("DOCX build error: " + e.message); }
+  }, 30);
+};
+
+/* ---------- wiring ---------- */
+$("#course").onchange = function () { populateUnits(); render(); };
+$("#unit").onchange = function () { populateWarms(); render(); };
+$("#warm").onchange = render;
+$("#scope").onchange = function () {
+  var s = document.querySelector('input[name=scope]:checked').value;
+  $("#unitGrp").style.display = (s === "course") ? "none" : "";
+  $("#warmGrp").style.display = (s === "warmup") ? "" : "none";
+  render();
+};
+["lineh", "fs", "accent", "figmax"].forEach(function (id) { $("#" + id).oninput = render; });
+$("#loadsheet").onclick = function () { var u = $("#sheet").value.trim(); if (u) loadUrl(u); };
+$("#loadfile").onclick = function () { $("#file").click(); };
+$("#file").onchange = function (e) {
+  var f = e.target.files[0]; if (!f) return;
+  var rd = new FileReader(); rd.onload = function () { setRows(rd.result, f.name); }; rd.readAsText(f);
+};
+
+/* ---------- boot: Sheet URL by default, bundled fallback ---------- */
+if (SHEET_CSV_URL) { $("#sheet").value = SHEET_CSV_URL; loadUrl(SHEET_CSV_URL); }
+else loadBundled();
+</script>
+<div style="text-align:center;font:12px 'Segoe UI',Arial,sans-serif;color:#667;padding:14px 12px 22px" class="noprint"><a href="./" style="color:#1f3a5f">← All workbook tools</a> &nbsp;·&nbsp; Independent project — not affiliated with or endorsed by Carnegie Mellon University.</div>
+</body>
+</html>

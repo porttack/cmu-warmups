@@ -1,0 +1,25 @@
+title: CMU Warm-ups
+description: >-
+  Printable warm-up workbooks for CMU CS Academy's Exploring Programming.
+  One spreadsheet drives every page; download print-ready PDF or editable Word.
+url: "https://cmu-warmups.porttack.com"
+baseurl: ""
+
+theme: minima
+minima:
+  skin: classic
+
+author:
+  name: Eric Sandeen
+
+# Tool pages are standalone full-bleed apps. They have no YAML front matter,
+# so Jekyll copies them through verbatim and minima's layout is not applied.
+# Keep it that way — a themed header would break the print layout.
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+
+# Nothing here starts with _ or . except _config.yml itself, so content.csv,
+# lib/, and the tool pages all publish normally.

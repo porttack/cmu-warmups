@@ -1,0 +1,8 @@
+out/
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+_site/
+.jekyll-cache/
+Gemfile.lock
