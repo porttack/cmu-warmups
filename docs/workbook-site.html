@@ -60,6 +60,11 @@
     <div class="grp"><label>Text size</label><input type="range" id="fs" min="11" max="15" value="13"><span id="fsV" style="font-size:12px">13pt</span></div>
     <div class="grp"><label>Accent</label><input type="color" id="accent" value="#1f3a5f"></div>
     <div class="grp"><label>Figure width</label><input type="range" id="figmax" min="170" max="320" value="230"><span id="figmaxV" style="font-size:12px">230px</span></div>
+    <div class="grp"><label>Page mode</label><select id="pagemode">
+      <option value="2" selected>Always 2 pages</option>
+      <option value="even">Even (fill sheets)</option>
+      <option value="any">Any number</option>
+    </select></div>
     <div class="grp"><label>Source</label><input type="url" id="sheet" placeholder="published Google Sheet CSV URL"><button class="btn" id="loadsheet">Load</button><button class="btn" id="loadfile">Upload…</button><input type="file" id="file" accept=".csv" style="display:none"></div>
   </div>
   <div class="status" id="status">loading…</div>
@@ -140,11 +145,124 @@ function applyOpts() {
   $("#figmaxV").textContent = $("#figmax").value + "px";
 }
 
+/* ---------- content-based pagination (Even / Any page modes) ----------
+ * Packs L.warmupBlocks() into fixed-size .page boxes by measuring real DOM
+ * height, so writing-line height / text size / figure width are honored
+ * automatically (they're the same CSS vars the real preview uses). A block
+ * is never split across pages; only whole sections may straddle a break. */
+var measureHost = null;
+function getMeasureHost() {
+  if (!measureHost) {
+    measureHost = document.createElement("div");
+    measureHost.style.cssText = "position:absolute;left:-99999px;top:0;visibility:hidden";
+    document.body.appendChild(measureHost);
+  }
+  return measureHost;
+}
+function measurePageEl() {
+  var page = document.createElement("section");
+  page.className = "page";
+  page.style.cssText = "height:11in;min-height:0;overflow:hidden";
+  getMeasureHost().appendChild(page);
+  return page;
+}
+function overflows(page, html) {
+  page.innerHTML = html;
+  return page.scrollHeight > page.clientHeight;
+}
+
+/* Pack ordered {html, keepWithNext} blocks into pages; returns an array of
+ * inner-HTML strings, one per page. */
+function packBlocks(blocks) {
+  var page = measurePageEl(), pages = [], idx = 0;
+  while (idx < blocks.length) {
+    var html = "", placed = [];
+    while (idx < blocks.length) {
+      var candidate = html + blocks[idx].html;
+      if (html !== "" && overflows(page, candidate)) break;
+      html = candidate; placed.push(idx); idx++;
+    }
+    // don't strand a section label alone at the bottom of a page
+    if (idx < blocks.length && placed.length > 1 && blocks[placed[placed.length - 1]].keepWithNext) {
+      idx = placed.pop();
+      html = placed.map(function (i) { return blocks[i].html; }).join("");
+    }
+    pages.push(html);
+  }
+  page.parentNode.removeChild(page);
+  return pages;
+}
+
+/* A blank-grids-then-writing-lines page, sized to fill exactly one page at
+ * the current writing-line height (used to pad an odd page count to even). */
+function fillPageHTML() {
+  var page = measurePageEl();
+  var grids = L.fillGridsHTML(), n = 0, best = grids;
+  while (true) {
+    var wl = '<div class="wl">';
+    for (var i = 0; i <= n; i++) wl += '<div class="wline"></div>';
+    wl += "</div>";
+    if (overflows(page, grids + wl)) break;
+    best = grids + wl; n++;
+  }
+  page.parentNode.removeChild(page);
+  return best;
+}
+
+function warmupPageCount(w) { return packBlocks(L.warmupBlocks(w)).length; }
+
+function warmupPagesHTML(w, mode) {
+  var pages = packBlocks(L.warmupBlocks(w));
+  if (mode === "even" && pages.length % 2 === 1) pages.push(fillPageHTML());
+  return pages.map(function (html) {
+    return '<section class="page" data-page="' + L.esc(w.page) + '">' + html + "</section>";
+  }).join("");
+}
+
+function renderPaged(sel, mode) {
+  if (sel.scope === "warmup") {
+    var w = L.warmupFromRows(L.pageRows(rows, sel.course, sel.unit, sel.page));
+    return warmupPagesHTML(w, mode);
+  }
+  var unitList = sel.scope === "course" ? L.units(rows, sel.course) : [sel.unit];
+  var out = "";
+  unitList.forEach(function (u) {
+    var ws = L.warmPages(rows, sel.course, u).map(function (p) { return L.warmupFromRows(L.pageRows(rows, sel.course, u, p)); });
+    out += L.unitCoverHTML(sel.course, u, ws);
+    if (mode === "even") out += '<section class="page">' + fillPageHTML() + "</section>"; // cover is always 1 page
+    ws.forEach(function (w) { out += warmupPagesHTML(w, mode); });
+  });
+  return out;
+}
+
+/* Which warm-ups the browser measured as an odd page count, for Even mode's
+ * best-effort DOCX padding (Word repaginates on its own, so this mirrors
+ * the preview's block packing rather than Word's actual layout). */
+function computeOddWarmups(sel, mode) {
+  var odd = {};
+  if (mode !== "even") return odd;
+  function check(course, unit, w) {
+    if (warmupPageCount(w) % 2 === 1) odd[course + "|" + unit + "|" + w.page] = true;
+  }
+  if (sel.scope === "warmup") {
+    check(sel.course, sel.unit, L.warmupFromRows(L.pageRows(rows, sel.course, sel.unit, sel.page)));
+    return odd;
+  }
+  var unitList = sel.scope === "course" ? L.units(rows, sel.course) : [sel.unit];
+  unitList.forEach(function (u) {
+    L.warmPages(rows, sel.course, u).forEach(function (p) {
+      check(sel.course, u, L.warmupFromRows(L.pageRows(rows, sel.course, u, p)));
+    });
+  });
+  return odd;
+}
+
 /* ---------- render preview ---------- */
 function render() {
   if (!ready) return;
   applyOpts();
-  $("#preview").innerHTML = L.scopeHTML(rows, currentScope(), {});
+  var sel = currentScope(), mode = $("#pagemode").value;
+  $("#preview").innerHTML = mode === "2" ? L.scopeHTML(rows, sel, {}) : renderPaged(sel, mode);
 }
 
 /* ---------- figures -> figMap (canvas raster, high-res) ---------- */
@@ -173,9 +291,12 @@ $("#dldocx").onclick = function () {
   status("rendering figures + building Word file…");
   setTimeout(function () {
     try {
+      var mode = $("#pagemode").value;
       var figMap = buildFigMap(sel);
+      if (mode === "even") figMap["grid"] = { data: rasterize("grid", 1500) }; // fill-page grids aren't referenced by content rows
       var lineHeightPt = +$("#lineh").value * 0.75; // screen px (96dpi) -> pt
-      var doc = WBDOCX.buildDoc(rows, { scope: sel.scope, course: sel.course, unit: sel.unit, page: sel.page, figMap: figMap, options: { lineHeightPt: lineHeightPt } });
+      var padPages = computeOddWarmups(sel, mode);
+      var doc = WBDOCX.buildDoc(rows, { scope: sel.scope, course: sel.course, unit: sel.unit, page: sel.page, figMap: figMap, options: { lineHeightPt: lineHeightPt }, pageMode: mode, padPages: padPages });
       docx.Packer.toBlob(doc).then(function (blob) {
         var a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
@@ -198,6 +319,7 @@ $("#scope").onchange = function () {
   render();
 };
 ["lineh", "fs", "accent", "figmax"].forEach(function (id) { $("#" + id).oninput = render; });
+$("#pagemode").onchange = render;
 $("#loadsheet").onclick = function () { var u = $("#sheet").value.trim(); if (u) loadUrl(u); };
 $("#loadfile").onclick = function () { $("#file").click(); };
 $("#file").onchange = function (e) {

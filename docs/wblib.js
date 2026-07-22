@@ -404,21 +404,48 @@
 
   /* Render a list of items, grouping consecutive figures that share the same
    * cols=N hint into one side-by-side row instead of stacking them. */
-  function itemsHTML(items) {
-    var out = "", i = 0;
+  function itemsBlocks(items) {
+    var out = [], i = 0;
     while (i < items.length) {
       var it = items[i], c = it.type === "figure" ? hintCols(it.hint) : null;
       if (c && c >= 2) {
         var run = [it], j = i + 1;
         while (j < items.length && items[j].type === "figure" && hintCols(items[j].hint) === c) { run.push(items[j]); j++; }
-        out += '<div class="figcols">' + run.map(itemHTML).join("") + "</div>";
+        out.push('<div class="figcols">' + run.map(itemHTML).join("") + "</div>");
         i = j;
       } else {
-        out += itemHTML(it);
+        out.push(itemHTML(it));
         i++;
       }
     }
     return out;
+  }
+  function itemsHTML(items) { return itemsBlocks(items).join(""); }
+
+  /* Blank grid figures for a page-mode fill page (Even mode padding). */
+  function fillGridsHTML() {
+    return '<div class="figcols">' +
+      '<div class="fig" style="max-width:260px">' + figureSVG("grid") + '</div>' +
+      '<div class="fig" style="max-width:260px">' + figureSVG("grid") + '</div>' +
+      '</div>';
+  }
+
+  /* Ordered, paginatable blocks for one warm-up: an atomic header+strip
+   * lead block (always starts a page), then section labels and item blocks
+   * flowing continuously with no forced section breaks. keepWithNext marks
+   * a section label/bar that shouldn't be stranded alone at a page bottom. */
+  function warmupBlocks(w) {
+    var blocks = [{ html: headerHTML(w) + stripHTML(w), keepWithNext: false }];
+    var vocab = w.vocab || [];
+    if (vocab.length) {
+      blocks.push({ html: '<div class="seclabel">Vocabulary — write each in your own words</div>', keepWithNext: true });
+      itemsBlocks(vocab).forEach(function (h) { blocks.push({ html: h, keepWithNext: false }); });
+    }
+    blocks.push({ html: '<div class="seclabel">Part 1 — core work</div>', keepWithNext: true });
+    itemsBlocks(w.part1).forEach(function (h) { blocks.push({ html: h, keepWithNext: false }); });
+    blocks.push({ html: '<div class="part2bar">PART 2 <em>— keep going if you finish early.</em></div>', keepWithNext: true });
+    itemsBlocks(w.part2).forEach(function (h) { blocks.push({ html: h, keepWithNext: false }); });
+    return blocks;
   }
 
   function headerHTML(w) {
@@ -544,6 +571,7 @@
 ".coverbox ul{margin:4px 0;padding-left:18px}.coverbox li{margin:3px 0}",
 ".wcard{display:block;width:100%;text-align:left;border:1px solid #ccd;background:#fff;padding:8px 10px;margin:4px 0;border-radius:4px;cursor:pointer}",
 ".wcard b{display:block}.wcard span{color:#666;font-size:12px}",
+"@page{size:letter;margin:0}",
 "@media print{body{background:#fff}.page{margin:0;box-shadow:none;width:auto;min-height:auto}.noprint{display:none!important}}"
     ].join("\n");
   }
@@ -557,7 +585,8 @@
     warmupHTML: warmupHTML, unitHTML: unitHTML, scopeHTML: scopeHTML,
     warmupCardsHTML: warmupCardsHTML, unitCoverHTML: unitCoverHTML, styleCSS: styleCSS,
     hintN: hintN, hintW: hintW, hintH: hintH, hintNoHead: hintNoHead, hintCols: hintCols,
-    tableRows: tableRows, matchPairs: matchPairs, itemHTML: itemHTML, itemsHTML: itemsHTML
+    tableRows: tableRows, matchPairs: matchPairs, itemHTML: itemHTML, itemsHTML: itemsHTML,
+    itemsBlocks: itemsBlocks, warmupBlocks: warmupBlocks, fillGridsHTML: fillGridsHTML
   };
   if (typeof module !== "undefined" && module.exports) module.exports = API;
   if (typeof window !== "undefined") window.L = API;

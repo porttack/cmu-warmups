@@ -257,7 +257,23 @@
     return out;
   }
 
-  function warmupParas(w, figMap) {
+  /* A blank-grids-then-writing-lines fill page, used to pad an odd page
+   * count to even (Even page mode). Word can't be measured ahead of time
+   * like the browser preview, so the writing-line count is a heuristic
+   * estimate of how many lines fit below the grids at the current
+   * writing-line height \u2014 best-effort, not exact. */
+  function fillPageParas(figMap) {
+    var out = [para([new PB()])];
+    out.push(figureRowsTable([{ figure: "grid", hint: "w=260" }, { figure: "grid", hint: "w=260" }], 2, figMap));
+    var gridTwips = Math.round(Math.min(6.5, 260 / 96) * 1440) + 160;
+    var pageContentTwips = 11 * 1440 - 2 * 792; // matches buildDoc's page.margin.top/bottom
+    var n = Math.max(4, Math.floor(Math.max(0, pageContentTwips - gridTwips) / THEME.lineTwips));
+    return out.concat(writingLines(n));
+  }
+
+  function warmupParas(w, figMap, opts) {
+    opts = opts || {};
+    var pageMode = opts.pageMode || "2";
     var out = [];
     headerBlock(w).forEach(function (x) { out.push(x); });
     stripBlock(w).forEach(function (x) { out.push(x); });
@@ -266,11 +282,14 @@
       out.push(sectionLabel("Vocabulary \u2014 write each in your own words"));
       sectionParas(vocab, figMap).forEach(function (p) { out.push(p); });
     }
-    out.push(para([new PB()]));                         // -> page 2
+    if (pageMode === "2") out.push(para([new PB()]));    // -> page 2 (fixed split)
+    // "even"/"any": no forced break here \u2014 Part 1/Part 2 flow continuously,
+    // may straddle a page on their own; only individual items stay atomic.
     out.push(sectionLabel("Part 1 \u2014 core work"));
     sectionParas(w.part1, figMap).forEach(function (p) { out.push(p); });
     out.push(part2Bar());
     sectionParas(w.part2, figMap).forEach(function (p) { out.push(p); });
+    if (opts.pad) fillPageParas(figMap).forEach(function (p) { out.push(p); });
     return out;
   }
 
@@ -295,11 +314,18 @@
     return out;
   }
 
-  function unitParas(rows, course, unit, figMap) {
+  function unitParas(rows, course, unit, figMap, cfg) {
+    cfg = cfg || {};
     var pages = L.warmPages(rows, course, unit);
     var ws = pages.map(function (p) { return L.warmupFromRows(L.pageRows(rows, course, unit, p)); });
     var out = coverParas(course, unit, ws);
-    ws.forEach(function (w) { out.push(para([new PB()])); warmupParas(w, figMap).forEach(function (p) { out.push(p); }); });
+    if (cfg.pageMode === "even") fillPageParas(figMap).forEach(function (p) { out.push(p); }); // cover is always 1 page
+    ws.forEach(function (w) {
+      out.push(para([new PB()]));
+      var key = course + "|" + unit + "|" + w.page;
+      var pad = cfg.pageMode === "even" && !!(cfg.padPages && cfg.padPages[key]);
+      warmupParas(w, figMap, { pageMode: cfg.pageMode, pad: pad }).forEach(function (p) { out.push(p); });
+    });
     return out;
   }
 
@@ -316,16 +342,19 @@
     cfg = cfg || {}; var figMap = cfg.figMap || {};
     if (cfg.options && cfg.options.lineHeightPt) THEME.lineTwips = Math.round(cfg.options.lineHeightPt * 20);
     var scope = cfg.scope || "unit", body;
+    var pageMode = cfg.pageMode || "2", padPages = cfg.padPages || {};
     if (scope === "warmup") {
-      body = warmupParas(L.warmupFromRows(L.pageRows(rows, cfg.course, cfg.unit, cfg.page)), figMap);
+      var w = L.warmupFromRows(L.pageRows(rows, cfg.course, cfg.unit, cfg.page));
+      var key = cfg.course + "|" + cfg.unit + "|" + w.page;
+      body = warmupParas(w, figMap, { pageMode: pageMode, pad: pageMode === "even" && !!padPages[key] });
     } else if (scope === "course") {
       body = []; var first = true;
       L.units(rows, cfg.course).forEach(function (u) {
         if (!first) body.push(para([new PB()])); first = false;
-        unitParas(rows, cfg.course, u, figMap).forEach(function (p) { body.push(p); });
+        unitParas(rows, cfg.course, u, figMap, { pageMode: pageMode, padPages: padPages }).forEach(function (p) { body.push(p); });
       });
     } else {
-      body = unitParas(rows, cfg.course, cfg.unit, figMap);
+      body = unitParas(rows, cfg.course, cfg.unit, figMap, { pageMode: pageMode, padPages: padPages });
     }
     return new D.Document({
       styles: { default: { document: { run: { font: "Calibri", size: THEME.base } } } },

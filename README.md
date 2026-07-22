@@ -27,8 +27,21 @@ pages unless you want minima's header landing in the middle of a printed workboo
 ## The tools
 
 - **Build & download** — pick a warm-up, a unit, or the whole course; adjust
-  writing-line height, text size, accent color, and figure width; download PDF
-  (via the browser's print dialog) or a real `.docx`.
+  writing-line height, text size, accent color, figure width, and page mode;
+  download PDF (via the browser's print dialog) or a real `.docx`.
+  - **Page mode** — how many pages each warm-up prints as: **Always 2
+    pages** (the fixed header+vocab / Part 1+Part 2 split, the long-standing
+    default), **Even** (content-based — pages flow to fit the actual
+    content, then a blank grids-and-writing-lines page is added if needed so
+    every warm-up and the unit/course cover ends on an even page count, for
+    duplex binders where each warm-up should start on a fresh sheet), or
+    **Any number** (content-based, no rounding — the fewest pages the
+    content needs, odd counts allowed). Even/Any measure real rendered
+    height in the browser, so they honor the current writing-line height,
+    text size, and figure width; only whole problems are kept from
+    splitting across a page break, not whole sections. The `.docx` export
+    mirrors the same mode, though Word repaginates on its own so Even-mode
+    padding there is best-effort.
 - **Warm-up editor** — edit vocabulary, Part 1 / Part 2, and figures with a live
   preview, then export an updated `content.csv`.
 - **Live preview** — poll a published Google Sheet and re-render on a timer.

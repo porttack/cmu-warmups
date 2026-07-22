@@ -4,6 +4,34 @@ Notable changes to the workbook generator, one entry per implementation
 session (see the CS0 prep notes for full session scope and ground rules).
 Newest first.
 
+## 2026-07-22 — Session 7: page modes on the Build & download tool
+
+- Added a **Page mode** control to `workbook-site.html`: **Always 2 pages**
+  (the existing fixed header+vocab / Part 1+Part 2 split, still the
+  default), **Even** (content-based pagination, rounded up to an even page
+  count per warm-up and per unit/course cover — useful for duplex binders
+  where every warm-up should start on a sheet front), and **Any number**
+  (content-based, odd counts allowed, fewest pages).
+- Content-based modes pack `docs/wblib.js`'s new `warmupBlocks()` output
+  (an ordered list of atomic problem/section blocks, with no forced section
+  breaks — only a whole warm-up is guaranteed to start a fresh page) into
+  fixed-size page boxes by measuring real rendered height in a hidden DOM
+  element, so the current writing-line height, text size, and figure width
+  are automatically honored. `itemsHTML` is now a thin wrapper over the new
+  `itemsBlocks`, so output for the existing renderers is unchanged.
+- Even mode pads with a fill page: two blank grid figures
+  (`L.fillGridsHTML()`) plus writing lines, with the line count measured to
+  fill the remaining space at the current writing-line height.
+- The `.docx` export (`docs/wbdocx.js`) mirrors the same modes: Always-2
+  keeps its forced page break after vocabulary; Even/Any let Part 1/Part 2
+  flow without a forced break. Even-mode padding in the `.docx` reuses the
+  browser's measured odd/even page counts per warm-up, with a heuristic
+  writing-line count for the fill page (Word repaginates on its own, so
+  this is best-effort, not exact).
+- Scope: the browser "Build & download" tool only. The offline
+  `toolchain/generate.py` CLI, warm-up editor, and live-preview pages are
+  unchanged.
+
 ## 2026-07-22 — Session 6: `match` item type
 
 - Added `match`: a two-column matching exercise. `content` is one pair per
