@@ -51,6 +51,23 @@ pages unless you want minima's header landing in the middle of a printed workboo
   for a figure.
 - **figure** — a figure spec; blank on non-figure rows.
 
+### Inline markdown
+
+The `content` column supports a small inline set — no headings, lists, or
+links:
+
+```
+**bold**    ->  bold
+*italic*    ->  italic
+`code`      ->  inline monospace
+```
+
+Supported in `p`, `label`, and `vocab` rows. `code` rows are literal program
+text — markdown characters there are never processed, so asterisks and
+backticks in real code survive untouched. All three renderers (HTML,
+the JS Word builder, the Python Word builder) implement the same three forms,
+so a page looks the same whether it's printed, previewed, or exported.
+
 Each warm-up renders as exactly **two pages**. Page 1 is the header, the START
 HERE strip (A pace check, B/C "I can…" self-checks, D reflection, E rotating
 check-in) and vocabulary. Page 2 is Part 1 and the Part 2 stretch band. A one-page

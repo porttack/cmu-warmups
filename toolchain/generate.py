@@ -11,6 +11,7 @@ THEME dict below. Figures come from the `figure` spec column via figrender.py.
 import argparse
 import csv
 import os
+import re
 import tempfile
 
 from docx import Document
@@ -98,15 +99,44 @@ def _set_table_full(table):
     tblPr.append(w)
 
 
-def _run(p, text, size=None, bold=False, color=None, mono=False):
+def _run(p, text, size=None, bold=False, color=None, mono=False, italic=False):
     r = p.add_run(text)
     r.font.name = THEME["mono"] if mono else THEME["font"]
     if size:
         r.font.size = Pt(size)
     r.bold = bold
+    r.italic = italic
     if color:
         r.font.color.rgb = RGBColor.from_string(color)
     return r
+
+
+# Inline markdown: **bold**, *italic*, `code`. Mirrors mdInline()/mdRuns() in
+# wblib.js/wbdocx.js so all three renderers treat the same content the same way.
+_MD_RE = re.compile(r"(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)")
+
+
+def _md_run(p, text, size=None, bold=False, color=None):
+    text = "" if text is None else str(text)
+    last = 0
+    wrote = False
+    for m in _MD_RE.finditer(text):
+        if m.start() > last:
+            _run(p, text[last:m.start()], size=size, bold=bold, color=color)
+        tok = m.group(0)
+        if tok.startswith("**"):
+            _run(p, tok[2:-2], size=size, bold=True, color=color)
+        elif tok.startswith("*"):
+            _run(p, tok[1:-1], size=size, bold=bold, color=color, italic=True)
+        else:
+            _run(p, tok[1:-1], size=size, bold=bold, color=color, mono=True)
+        last = m.end()
+        wrote = True
+    if last < len(text):
+        _run(p, text[last:], size=size, bold=bold, color=color)
+        wrote = True
+    if not wrote:
+        _run(p, text, size=size, bold=bold, color=color)
 
 
 # ----------------------------- content pieces -----------------------------
@@ -251,18 +281,18 @@ def render_item(doc, it, figcache):
     elif t == "label":
         p = doc.add_paragraph()
         _no_space(p, before=6, after=2)
-        _run(p, it["content"], bold=True, size=THEME["base_pt"])
+        _md_run(p, it["content"], bold=True, size=THEME["base_pt"])
     elif t == "lines":
         writing_lines(doc, hint_n(it["hint"], 3))
     elif t == "vocab":
         p = doc.add_paragraph()
         _no_space(p, before=4, after=2)
-        _run(p, it["content"], bold=True, size=THEME["base_pt"])
+        _md_run(p, it["content"], bold=True, size=THEME["base_pt"])
         writing_lines(doc, hint_n(it["hint"], 2))
     else:  # p
         p = doc.add_paragraph()
         _no_space(p, before=4, after=2)
-        _run(p, it["content"], size=THEME["base_pt"])
+        _md_run(p, it["content"], size=THEME["base_pt"])
         n = hint_n(it["hint"], 2)
         if n > 0:
             writing_lines(doc, n)

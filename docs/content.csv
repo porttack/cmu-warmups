@@ -252,3 +252,9 @@ csN-demo,1,4,w4,part2,11,code,"figure = canvas=300; grid=off; circle 150,150,100
 csN-demo,1,4,w4,part2,12,figure,,w=140,"canvas=300; grid=off; circle 150,150,100,silver"
 csN-demo,1,4,w4,part2,13,note,"This row's type is note, which no renderer knows. An unrecognised type falls back to a plain prompt, so a typo in the type column never breaks a page.",n=1,
 csN-demo,1,4,w4,part2,14,p,"Page 1 of this warm-up has no vocab rows, so no vocabulary heading was printed on it at all.",n=0,
+csN-demo,1,21,w21,meta,0,topic,Markdown in prompts,,
+csN-demo,1,21,w21,meta,1,ican,I can use bold and italic in a prompt,,
+csN-demo,1,21,w21,meta,2,ican,I can show inline code without breaking it,,
+csN-demo,1,21,w21,part1,3,p,"This is **bold** and this is *italic* and this is `Circle(200, 200, 50)` inline.",n=1,
+csN-demo,1,21,w21,part1,4,code,"# asterisks and backticks must survive here: **not bold** `not code`",,
+csN-demo,1,21,w21,part2,5,p,Markdown works in **Part 2** prompts too.,n=1,

@@ -46,8 +46,27 @@
 
   function run(text, o) {
     o = o || {};
-    return new T({ text: text, bold: !!o.bold, color: o.color, size: o.size || THEME.base,
+    return new T({ text: text, bold: !!o.bold, italics: !!o.italics, color: o.color, size: o.size || THEME.base,
       font: o.mono ? "Consolas" : "Calibri", break: o.break });
+  }
+
+  /* Inline markdown -> run specs: **bold**, *italic*, `code`. Mirrors mdInline()
+   * in wblib.js, but produces TextRuns instead of escaped HTML. */
+  function mdRuns(s, base) {
+    base = base || {};
+    var out = [], re = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g, last = 0, m;
+    s = String(s == null ? "" : s);
+    while ((m = re.exec(s))) {
+      if (m.index > last) out.push(run(s.slice(last, m.index), base));
+      var tok = m[0];
+      if (tok.slice(0, 2) === "**") out.push(run(tok.slice(2, -2), Object.assign({}, base, { bold: true })));
+      else if (tok[0] === "*")      out.push(run(tok.slice(1, -1), Object.assign({}, base, { italics: true })));
+      else                          out.push(run(tok.slice(1, -1), Object.assign({}, base, { mono: true })));
+      last = re.lastIndex;
+    }
+    if (last < s.length) out.push(run(s.slice(last), base));
+    if (!out.length) out.push(run(s, base));
+    return out;
   }
   function para(children, o) {
     o = o || {};
@@ -147,12 +166,12 @@
     var t = it.type;
     if (t === "figure") return [figurePara(it.figure || "grid", hintW(it.hint, 230), figMap)];
     if (t === "code") return [codeBox(it.content)];
-    if (t === "label") return [para([run(it.content, { bold: true, size: THEME.base })], { before: 120, after: 40 })];
+    if (t === "label") return [para(mdRuns(it.content, { bold: true, size: THEME.base }), { before: 120, after: 40 })];
     if (t === "lines") return writingLines(hintN(it.hint, 3));
-    if (t === "vocab") return [para([run(it.content, { bold: true, size: THEME.base })], { before: 80, after: 40 })]
+    if (t === "vocab") return [para(mdRuns(it.content, { bold: true, size: THEME.base }), { before: 80, after: 40 })]
       .concat(writingLines(hintN(it.hint, 2)));
     var n = hintN(it.hint, 2);
-    return [para([run(it.content, { size: THEME.base })], { before: 80, after: 40 })].concat(n > 0 ? writingLines(n) : []);
+    return [para(mdRuns(it.content, { size: THEME.base }), { before: 80, after: 40 })].concat(n > 0 ? writingLines(n) : []);
   }
 
   function warmupParas(w, figMap) {
@@ -234,7 +253,7 @@
     });
   }
 
-  var API = { buildDoc: buildDoc, figKeysForScope: figKeysForScope, THEME: THEME };
+  var API = { buildDoc: buildDoc, figKeysForScope: figKeysForScope, THEME: THEME, mdRuns: mdRuns };
   if (typeof module !== "undefined" && module.exports) module.exports = API;
   if (typeof window !== "undefined") window.WBDOCX = API;
 })();
