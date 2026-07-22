@@ -266,3 +266,9 @@ csN-demo,1,22,w22,part1,4,code,"if b.radius > 40
     b.fill = 'green'",,
 csN-demo,1,22,w22,part1,5,error,SyntaxError: invalid syntax,,
 csN-demo,1,22,w22,part2,6,p,What is missing from the code above?,n=2,
+csN-demo,1,23,w23,meta,0,topic,Tables,,
+csN-demo,1,23,w23,meta,1,ican,I can fill in a trace table,,
+csN-demo,1,23,w23,meta,2,ican,I can read a table header row,,
+csN-demo,1,23,w23,part1,3,p,TRACE TABLE — `b.centerX` starts at 100 and `onStep` runs `b.centerX += 20`. Fill in each step.,n=0,
+csN-demo,1,23,w23,part1,4,table,"step|start|1|2|3|4
+centerX|100||||",h=34,

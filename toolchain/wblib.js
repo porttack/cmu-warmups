@@ -332,6 +332,15 @@
   }
   function hintN(hint, dflt) { var m = /n\s*=\s*(\d+)/.exec(hint || ""); return m ? +m[1] : dflt; }
   function hintW(hint, dflt) { var m = /w\s*=\s*(\d+)/.exec(hint || ""); return m ? +m[1] : dflt; }
+  function hintH(hint, dflt) { var m = /h\s*=\s*(\d+)/.exec(hint || ""); return m ? +m[1] : dflt; }
+  function hintNoHead(hint) { return /head\s*=\s*0/.test(String(hint || "")); }
+
+  /* table content: rows separated by newline, cells by | (shared by all renderers) */
+  function tableRows(content) {
+    var text = String(content == null ? "" : content).replace(/\r\n/g, "\n");
+    return text.split("\n").filter(function (ln) { return ln !== ""; })
+      .map(function (ln) { return ln.split("|").map(function (c) { return c.trim(); }); });
+  }
 
   function itemHTML(it) {
     var t = it.type;
@@ -342,6 +351,20 @@
     if (t === "code") return '<pre class="code">' + esc(it.content) + "</pre>";
     if (t === "error") return '<pre class="error"><b>Python says:</b> ' + esc(it.content) + "</pre>";
     if (t === "note") return '<div class="note">' + mdInline(it.content) + "</div>";
+    if (t === "table") {
+      var trows = tableRows(it.content);
+      var noHead = hintNoHead(it.hint);
+      var h = hintH(it.hint, null);
+      var hStyle = h ? (' style="height:' + h + 'px"') : "";
+      var out = '<table class="ttable">';
+      trows.forEach(function (cells, ri) {
+        var isHead = !noHead && ri === 0, tag = isHead ? "th" : "td";
+        out += "<tr>" + cells.map(function (c) {
+          return "<" + tag + (isHead ? "" : hStyle) + ">" + mdInline(c) + "</" + tag + ">";
+        }).join("") + "</tr>";
+      });
+      return out + "</table>";
+    }
     if (t === "label") return '<div class="ilabel">' + mdInline(it.content) + "</div>";
     if (t === "lines") return lines(hintN(it.hint, 3));
     if (t === "vocab") {
@@ -457,6 +480,10 @@
 ".code{background:#f5f5f5;border:1px solid #ccc;border-left:4px solid #888;padding:8px 10px;font-family:Consolas,monospace;font-size:11pt;white-space:pre-wrap;border-radius:2px}",
 ".error{background:var(--shade);border:1px solid #ccc;border-left:4px solid #888;padding:8px 10px;font-family:Consolas,monospace;font-size:11pt;white-space:pre-wrap;border-radius:2px}",
 ".note{border:1px solid var(--rule);padding:8px 10px;margin:8px 0}",
+".ttable{width:100%;border-collapse:collapse;margin:8px 0}",
+".ttable th,.ttable td{border:1px solid var(--rule);padding:4px 8px;text-align:left;vertical-align:top;overflow-wrap:break-word}",
+".ttable td{height:var(--line-h)}",
+".ttable th{background:var(--shade);font-weight:700}",
 ".ic{background:var(--shade);font-family:Consolas,monospace;font-size:0.92em;padding:0 3px}",
 ".fig{max-width:var(--fig-max);margin:8px 0}.fig svg{display:block;width:100%;height:auto}",
 ".cover h1{font-size:34pt;margin:.2in 0 0}.covertag{color:var(--accent);font-weight:800;letter-spacing:.12em}",
@@ -477,7 +504,7 @@
     figureSVG: figureSVG, drawFigure: drawFigure, figureSpecs: figureSpecs,
     warmupHTML: warmupHTML, unitHTML: unitHTML, scopeHTML: scopeHTML,
     warmupCardsHTML: warmupCardsHTML, unitCoverHTML: unitCoverHTML, styleCSS: styleCSS,
-    hintN: hintN, hintW: hintW
+    hintN: hintN, hintW: hintW, hintH: hintH, hintNoHead: hintNoHead, tableRows: tableRows
   };
   if (typeof module !== "undefined" && module.exports) module.exports = API;
   if (typeof window !== "undefined") window.L = API;

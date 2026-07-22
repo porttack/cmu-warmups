@@ -4,6 +4,24 @@ Notable changes to the workbook generator, one entry per implementation
 session (see the CS0 prep notes for full session scope and ground rules).
 Newest first.
 
+## 2026-07-22 — Session 4: `table` item type
+
+- Added `table`: a bordered trace/data table. `content` is rows separated by
+  a newline, cells separated by `|`. The first row is a header (shaded with
+  the design token used elsewhere for shading) unless `hint` contains
+  `head=0`. Empty cells render blank and tall enough to write in; `hint` may
+  also carry `h=NN` for cell height in px, defaulting to the writing-line
+  height already used elsewhere. Cell text supports the same inline markdown
+  as `p`/`label`/`vocab`/`note`.
+- Mirrored across all three renderers, sharing the row/cell parsing logic
+  (`tableRows`/`hintH`/`hintNoHead`) between `docs/wblib.js` and
+  `docs/wbdocx.js` so the two never drift; `toolchain/generate.py` mirrors the
+  same parsing independently in Python.
+- Added `table` to the warm-up editor's type list — a plain textarea holds
+  the pipe/newline content, no dedicated grid UI.
+- Added a `csN-demo` page (unit 1, `w23`) demonstrating a trace table for
+  `b.centerX` across four steps.
+
 ## 2026-07-22 — Session 3: `error` and `note` item types
 
 - Added `error`: a monospace, shaded callout for Python error messages,

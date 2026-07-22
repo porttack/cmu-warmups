@@ -101,6 +101,7 @@
 
   function hintN(hint, d) { var m = /n\s*=\s*(\d+)/.exec(hint || ""); return m ? +m[1] : d; }
   function hintW(hint, d) { var m = /w\s*=\s*(\d+)/.exec(hint || ""); return m ? +m[1] : d; }
+  function hintH(hint, d) { var m = /h\s*=\s*(\d+)/.exec(hint || ""); return m ? +m[1] : d; }
 
   /* --------- page pieces (mirror generate.py) --------- */
   function headerBlock(w) {
@@ -164,6 +165,23 @@
   function noteBox(text) {
     return para(mdRuns(text, { size: THEME.base }), { before: 80, after: 80, allBorder: THEME.rule });
   }
+  function tableBlock(it) {
+    var trows = L.tableRows(it.content);
+    var noHead = L.hintNoHead(it.hint);
+    var rowH = hintH(it.hint, null);
+    var rowTwips = rowH ? Math.round(rowH * 15) : THEME.lineTwips;
+    var rows = trows.map(function (cells, ri) {
+      var isHead = !noHead && ri === 0;
+      var tds = cells.map(function (c) {
+        return cell([para(mdRuns(c, { size: THEME.base, bold: isHead }))],
+          isHead ? { shade: THEME.shade } : {});
+      });
+      var opts = { children: tds };
+      if (!isHead) opts.height = { value: rowTwips, rule: D.HeightRule.ATLEAST };
+      return new Row(opts);
+    });
+    return fullTable(rows);
+  }
   function figurePara(spec, wpx, figMap) {
     var bytes = figBytes(figMap && figMap[spec]);
     if (!bytes) return para([run("[figure: " + spec + "]", { color: "888888", size: THEME.small })]);
@@ -177,6 +195,7 @@
     if (t === "code") return [codeBox(it.content)];
     if (t === "error") return [errorBox(it.content)];
     if (t === "note") return [noteBox(it.content)];
+    if (t === "table") return [tableBlock(it)];
     if (t === "label") return [para(mdRuns(it.content, { bold: true, size: THEME.base }), { before: 120, after: 40 })];
     if (t === "lines") return writingLines(hintN(it.hint, 3));
     if (t === "vocab") return [para(mdRuns(it.content, { bold: true, size: THEME.base }), { before: 80, after: 40 })]

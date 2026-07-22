@@ -17,7 +17,7 @@ import tempfile
 from docx import Document
 from docx.shared import Pt, Inches, RGBColor, Emu
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING, WD_TAB_ALIGNMENT
-from docx.enum.table import WD_TABLE_ALIGNMENT, WD_CELL_VERTICAL_ALIGNMENT
+from docx.enum.table import WD_TABLE_ALIGNMENT, WD_CELL_VERTICAL_ALIGNMENT, WD_ROW_HEIGHT_RULE
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
@@ -279,6 +279,50 @@ def hint_w(hint, default):
     return default
 
 
+def hint_h(hint, default):
+    for tok in str(hint or "").replace(" ", "").split(";"):
+        if tok.startswith("h="):
+            try:
+                return int(tok[2:])
+            except ValueError:
+                pass
+    return default
+
+
+# table content: rows separated by newline, cells by | (mirrors tableRows() in wblib.js)
+def table_rows(content):
+    text = "" if content is None else str(content)
+    return [[c.strip() for c in ln.split("|")]
+            for ln in text.replace("\r\n", "\n").split("\n") if ln != ""]
+
+
+def table_box(doc, it):
+    trows = table_rows(it["content"])
+    if not trows:
+        return
+    no_head = "head=0" in str(it["hint"] or "").replace(" ", "")
+    ncols = max(len(r) for r in trows)
+    h_px = hint_h(it["hint"], None)
+    row_pt = (h_px * 0.75) if h_px else THEME["line_h_pt"]
+    t = doc.add_table(rows=len(trows), cols=ncols)
+    t.style = "Table Grid"
+    _set_table_full(t)
+    for ri, cells in enumerate(trows):
+        is_head = (not no_head) and ri == 0
+        row = t.rows[ri]
+        if not is_head:
+            row.height_rule = WD_ROW_HEIGHT_RULE.AT_LEAST
+            row.height = Pt(row_pt)
+        for ci in range(ncols):
+            text = cells[ci] if ci < len(cells) else ""
+            c = t.cell(ri, ci)
+            if is_head:
+                _cell_shade(c, THEME["shade"])
+            p = c.paragraphs[0]
+            _no_space(p)
+            _md_run(p, text, bold=is_head, size=THEME["base_pt"])
+
+
 def place_figure(doc, spec, wpx, figcache):
     if spec not in figcache:
         fd, path = tempfile.mkstemp(suffix=".png")
@@ -301,6 +345,8 @@ def render_item(doc, it, figcache):
         error_box(doc, it["content"])
     elif t == "note":
         note_box(doc, it["content"])
+    elif t == "table":
+        table_box(doc, it)
     elif t == "label":
         p = doc.add_paragraph()
         _no_space(p, before=6, after=2)
