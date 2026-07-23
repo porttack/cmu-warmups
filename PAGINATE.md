@@ -7,15 +7,25 @@ teachers at the README instead.
 
 ## The three modes, in one paragraph each
 
-- **Always 2 pages** — the original, unchanged layout. `L.warmupHTML()` in
-  `docs/wblib.js` always emits exactly two `<section class="page">`
-  elements: page 1 is header + START HERE strip + vocabulary, page 2 is
-  Part 1 + Part 2. No measurement happens. If content is unusually long it
-  silently overflows past 11in in print, same as it always has.
-- **Even** and **Any number** — content-based. Nothing is fixed ahead of
-  time; instead the actual rendered height of the content is measured in
-  the browser and packed into as many (Any) or an even number of (Even)
+All three are content-based: vocab, Part 1, and Part 2 flow continuously
+with no forced split between them, and the actual rendered height of the
+content is measured in the browser and packed into fixed-size pages.
+They differ only in how many pages that packing is allowed to produce:
+
+- **Always 2 pages** — packed with a hard cap of 2 pages
+  (`packBlocks(blocks, 2)`): once page 1 is full, everything left over is
+  dumped onto page 2 unmeasured, so a warm-up with a lot of content still
+  silently overflows past 11in in print on page 2, same as it always has.
+  A warm-up short enough to fit entirely on page 1 gets a blank fill page
+  appended so it still prints as 2 pages. This is the long-standing default.
+- **Even** and **Any number** — uncapped. Nothing is fixed ahead of time;
+  content is packed into as many (Any) or an even number of (Even)
   fixed-size pages as it takes.
+
+`L.warmupHTML()` in `docs/wblib.js` — the original, unmeasured fixed
+header+vocab / Part 1+Part 2 split — still exists, but only the warm-up
+editor and live-preview pages use it now (see "Where things live" below);
+`workbook-site.html`'s Page mode control never calls it.
 
 ## How content-based pagination works
 
@@ -39,13 +49,13 @@ atomic and guaranteed to never be split across two pages. `keepWithNext` is
 a soft hint, not a hard rule — see "Orphaned section labels" below.
 
 `itemsBlocks()` is the block-returning version of the older `itemsHTML()`;
-`itemsHTML()` is now just `itemsBlocks(items).join("")`, so every other
-caller (the editor, live-preview, Always-2 mode) is byte-for-byte
+`itemsHTML()` is now just `itemsBlocks(items).join("")`, so callers that
+don't paginate at all (the editor, live-preview) are byte-for-byte
 unchanged.
 
 ### 2. Packing blocks into pages (`docs/workbook-site.html`)
 
-`packBlocks(blocks)` is the actual packer. For each page, it:
+`packBlocks(blocks, maxPages)` is the actual packer. For each page, it:
 
 1. Creates one hidden, off-screen `<section class="page">` with an inline
    `height:11in; overflow:hidden` override (the *only* place a `.page`
@@ -62,6 +72,12 @@ unchanged.
    label with nothing following it on the same page), pulls it back onto
    the next page too, so a "Part 1" heading never sits alone at the bottom
    of a sheet.
+5. If `maxPages` is set (Always-2 mode passes `2`) and that many pages have
+   already been filled, every remaining block is dumped onto one final page
+   with no measurement at all — this is what lets a hard page-count cap
+   coexist with content-based packing, at the cost of tolerating overflow
+   past 11in on that last page for unusually long content, same as the old
+   fixed-split implementation always did.
 
 Because this reuses the *live* `--line-h` / `--fs` / `--fig-max` CSS custom
 properties already set by `applyOpts()`, changing the writing-line height,
@@ -76,29 +92,40 @@ always honors the current writing-line height). The unit/course cover is
 always exactly one page, so in Even mode it unconditionally gets one fill
 page appended after it.
 
+**Always-2 mode** additionally: if a warm-up's natural page count is 1 (it
+all fit on page 1), the same `fillPageHTML()` is appended so the warm-up
+still prints as 2 pages. Unlike Even mode, the cover is never padded in
+this mode — it was always exactly 1 page before and still is, unaffected
+by how warm-up content packs.
+
 ### 3. Mirroring it into `.docx` (`docs/wbdocx.js`)
 
 Word has its own layout engine — nothing in the browser can predict where
-*it* will break pages. So the `.docx` export mirrors the modes
-**structurally** instead of by measurement:
+*it* will break pages. So the `.docx` export doesn't measure either; all
+three modes emit vocab → Part 1 → Part 2 as one continuous flow with no
+hard page break, and Word paginates on its own:
 
-- **Always 2**: unchanged — a hard page break (`new PB()`) between
-  vocabulary and Part 1.
-- **Any / Even**: that hard break is removed. Vocab → Part 1 → Part 2 flow
-  continuously and Word paginates on its own.
-- **Even**: `docs/workbook-site.html`'s DOCX handler calls
-  `computeOddWarmups(sel, mode)`, which re-runs the *same* browser
+- **Even / Always-2**: `docs/workbook-site.html`'s DOCX handler calls
+  `computePadPages(sel, mode)`, which re-runs the *same* browser
   `packBlocks()` measurement used for the preview, and passes the resulting
   `{ "course|unit|page": true, ... }` map into `WBDOCX.buildDoc()` as
-  `cfg.padPages`. Any warm-up flagged there gets a `fillPageParas()` fill
-  page appended in the docx too. This is **best-effort** — it pads based on
-  what the *browser* measured, not what Word will actually do, so it can
-  drift on edge-case content.
+  `cfg.padPages`. Any warm-up flagged there (odd page count in Even mode,
+  fewer than 2 pages in Always-2 mode) gets a `fillPageParas()` fill page
+  appended in the docx too. This is **best-effort** — it pads based on what
+  the *browser* measured, not what Word will actually do, so it can drift
+  on edge-case content. Long content overflowing 2 pages in Always-2 mode
+  has no docx-side mirror at all — Word just paginates it onto however many
+  pages it needs, unlike the browser preview's hard 2-page cap.
 - The docx fill page's writing-line count is a **heuristic**, not a
   measurement: `fillPageParas()` in `docs/wbdocx.js` estimates the leftover
   vertical space (`page height − margins − grid image height`) and divides
   by `THEME.lineTwips`. See "Docx fill page has the wrong number of lines"
   below to tune it.
+- `toolchain/wbdocx.js` and `toolchain/generate.py` (the offline CLI) have
+  no page-mode concept at all — they always flow continuously with no hard
+  break and no padding, full stop. They're simpler mirrors kept for the
+  non-browser/offline path, not expected to reproduce any particular page
+  count.
 
 ## Where things live
 
@@ -106,14 +133,14 @@ Word has its own layout engine — nothing in the browser can predict where
 |---|---|---|
 | Block list for one warm-up | `docs/wblib.js` | `warmupBlocks`, `itemsBlocks`, `fillGridsHTML` |
 | Browser measurement + packing | `docs/workbook-site.html` | `packBlocks`, `measurePageEl`, `overflows`, `fillPageHTML` |
-| Per-warm-up / per-scope page assembly | `docs/workbook-site.html` | `warmupPagesHTML`, `renderPaged`, `computeOddWarmups` |
+| Per-warm-up / per-scope page assembly | `docs/workbook-site.html` | `warmupPagesHTML`, `renderPaged`, `computePadPages` |
 | Page-mode UI + wiring | `docs/workbook-site.html` | `#pagemode` select, `render()` |
 | Docx structural mirroring | `docs/wbdocx.js` | `warmupParas`, `unitParas`, `buildDoc`, `fillPageParas` |
 | Shared page CSS (screen + print) | `docs/wblib.js` | `styleCSS()` — `.page`, `@page` |
 
-`toolchain/generate.py` (the offline CLI) and the warm-up editor /
-live-preview pages are **out of scope** — they don't have page modes and
-aren't expected to.
+The warm-up editor and live-preview pages are **out of scope** — they use
+`L.warmupHTML()`'s original unmeasured fixed split directly, don't have
+page modes, and aren't expected to.
 
 ## Troubleshooting
 
@@ -157,10 +184,12 @@ they agree:
   `fillPageHTML()`) instead of an unconditional one.
 
 ### The `.docx` page count doesn't match the PDF/preview page count
-Expected in Any/Even mode — see "Mirroring it into `.docx`" above. This is
+Expected in any mode — see "Mirroring it into `.docx`" above. This is
 inherent (Word's layout engine ≠ the browser's), not a bug to chase to
-zero. If it's drifting a *lot* (multiple pages off, not just a fill-page
-edge case), suspect:
+zero; in Always-2 mode specifically, the browser's hard 2-page cap has no
+docx equivalent at all, so long content that overflows onto page 2 in the
+preview may spread across 3+ pages in Word. If it's drifting a *lot*
+(multiple pages off, not just a fill-page edge case), suspect:
 - The writing-line height sent to the docx builder
   (`options.lineHeightPt = +$("#lineh").value * 0.75`, the px→pt
   conversion) doesn't match what was measured in the browser at `--line-h`
@@ -177,7 +206,7 @@ Tune the heuristic constants in `fillPageParas()` in `docs/wbdocx.js`:
 0.55in top+bottom), and the `Math.max(4, ...)` floor. If you want this to
 stop being a heuristic, the real fix is to make the browser measure its own
 `fillPageHTML()` line count and pass that count through explicitly (similar
-to how `computeOddWarmups` passes counts today) instead of having
+to how `computePadPages` passes counts today) instead of having
 `wbdocx.js` re-derive it independently.
 
 ### Pagination is slow on Course scope with many units/warm-ups
@@ -203,7 +232,7 @@ first item). If this shows up in practice, the deeper fix is testing
 than testing them separately and un-placing after the fact.
 
 ### Print output doesn't match the on-screen preview page count
-Both should agree by construction (Any/Even modes bypass the browser's
+Both should agree by construction (all three modes bypass the browser's
 default flow-based pagination entirely, emitting one `<section class="page">`
 per already-decided page with `page-break-after: always`). If they diverge,
 check the printer/browser's paper-size setting — `@page{size:letter;margin:0}`

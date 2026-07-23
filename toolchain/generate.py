@@ -182,7 +182,7 @@ def strip_block(doc, w):
     no = int(w["no"]) if str(w["no"]).isdigit() else 0
     # (letter, label, opts, has_line): opts (circle-one words) are flushed right; None = plain row
     items = [
-        ("A", "Pace check — circle one:", "feeling good    a bit distracted    stuck — I could use help", False),
+        ("A", "Pace check — circle one:", "feeling good    a bit distracted    stuck", False),
         ("B", (ican[0] if len(ican) > 0 else ""), "got it    shaky    not yet", False),
         ("C", (ican[1] if len(ican) > 1 else ""), "got it    shaky    not yet", False),
         ("D", w.get("reflect") or "Looking back at last class — one thing that clicked, and one thing still fuzzy:", None, True),
@@ -225,8 +225,7 @@ def part2_bar(doc):
     p = doc.add_paragraph()
     _no_space(p, before=10, after=4)
     _shade(p._p.get_or_add_pPr(), THEME["shade"])
-    _run(p, "PART 2 ", bold=True, size=THEME["base_pt"])
-    _run(p, "— keep going if you finish early.", size=THEME["base_pt"], color="444444")
+    _run(p, "PART 2", bold=True, size=THEME["base_pt"])
 
 
 def code_box(doc, text):
@@ -535,14 +534,13 @@ def cover_page(doc, course, unit, ws):
 
 
 def build_warmup(doc, w):
-    header_block(doc, w)               # page 1
+    header_block(doc, w)
     strip_block(doc, w)
     figcache = doc._figcache
     if w["vocab"]:                     # no vocab rows -> no heading, no gap
         section_label(doc, "Vocabulary \u2014 write each in your own words")
         render_items(doc, w["vocab"], figcache)
-    doc.add_page_break()               # -> page 2
-    section_label(doc, "Part 1 \u2014 core work")
+    section_label(doc, "Part 1")
     render_items(doc, w["part1"], figcache)
     part2_bar(doc)
     render_items(doc, w["part2"], figcache)

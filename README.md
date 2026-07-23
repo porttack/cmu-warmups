@@ -30,7 +30,10 @@ pages unless you want minima's header landing in the middle of a printed workboo
   writing-line height, text size, accent color, figure width, and page mode;
   download PDF (via the browser's print dialog) or a real `.docx`.
   - **Page mode** — how many pages each warm-up prints as: **Always 2
-    pages** (the fixed header+vocab / Part 1+Part 2 split, the long-standing
+    pages** (content-based like the other modes — vocab, Part 1, and Part 2
+    flow continuously with no forced split — but capped to exactly 2 pages:
+    padded with a blank fill page if content is short, and the 2nd page
+    absorbs everything left over if content is long, the long-standing
     default), **Even** (content-based — pages flow to fit the actual
     content, then a blank grids-and-writing-lines page is added if needed so
     every warm-up and the unit/course cover ends on an even page count, for

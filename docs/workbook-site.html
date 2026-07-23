@@ -172,10 +172,17 @@ function overflows(page, html) {
 }
 
 /* Pack ordered {html, keepWithNext} blocks into pages; returns an array of
- * inner-HTML strings, one per page. */
-function packBlocks(blocks) {
+ * inner-HTML strings, one per page. With maxPages set, once that many pages
+ * have been filled the remaining blocks are all dumped onto one final page
+ * unmeasured (same overflow tolerance "Always 2" mode has always had) —
+ * used to keep a hard page-count cap while still packing by content. */
+function packBlocks(blocks, maxPages) {
   var page = measurePageEl(), pages = [], idx = 0;
   while (idx < blocks.length) {
+    if (maxPages && pages.length === maxPages - 1) {
+      pages.push(blocks.slice(idx).map(function (b) { return b.html; }).join(""));
+      break;
+    }
     var html = "", placed = [];
     while (idx < blocks.length) {
       var candidate = html + blocks[idx].html;
@@ -212,8 +219,9 @@ function fillPageHTML() {
 function warmupPageCount(w) { return packBlocks(L.warmupBlocks(w)).length; }
 
 function warmupPagesHTML(w, mode) {
-  var pages = packBlocks(L.warmupBlocks(w));
+  var pages = packBlocks(L.warmupBlocks(w), mode === "2" ? 2 : null);
   if (mode === "even" && pages.length % 2 === 1) pages.push(fillPageHTML());
+  else if (mode === "2" && pages.length < 2) pages.push(fillPageHTML());
   return pages.map(function (html) {
     return '<section class="page" data-page="' + L.esc(w.page) + '">' + html + "</section>";
   }).join("");
@@ -235,18 +243,21 @@ function renderPaged(sel, mode) {
   return out;
 }
 
-/* Which warm-ups the browser measured as an odd page count, for Even mode's
- * best-effort DOCX padding (Word repaginates on its own, so this mirrors
- * the preview's block packing rather than Word's actual layout). */
-function computeOddWarmups(sel, mode) {
-  var odd = {};
-  if (mode !== "even") return odd;
+/* Which warm-ups need a DOCX fill page: Even mode pads odd page counts to
+ * even, "2" mode pads a warm-up that packed into only 1 page back up to 2.
+ * Best-effort — Word repaginates on its own, so this mirrors the preview's
+ * block packing rather than Word's actual layout. */
+function computePadPages(sel, mode) {
+  var pad = {};
+  if (mode !== "even" && mode !== "2") return pad;
   function check(course, unit, w) {
-    if (warmupPageCount(w) % 2 === 1) odd[course + "|" + unit + "|" + w.page] = true;
+    var n = warmupPageCount(w);
+    var needsPad = mode === "even" ? (n % 2 === 1) : (n < 2);
+    if (needsPad) pad[course + "|" + unit + "|" + w.page] = true;
   }
   if (sel.scope === "warmup") {
     check(sel.course, sel.unit, L.warmupFromRows(L.pageRows(rows, sel.course, sel.unit, sel.page)));
-    return odd;
+    return pad;
   }
   var unitList = sel.scope === "course" ? L.units(rows, sel.course) : [sel.unit];
   unitList.forEach(function (u) {
@@ -254,7 +265,7 @@ function computeOddWarmups(sel, mode) {
       check(sel.course, u, L.warmupFromRows(L.pageRows(rows, sel.course, u, p)));
     });
   });
-  return odd;
+  return pad;
 }
 
 /* ---------- render preview ---------- */
@@ -262,7 +273,7 @@ function render() {
   if (!ready) return;
   applyOpts();
   var sel = currentScope(), mode = $("#pagemode").value;
-  $("#preview").innerHTML = mode === "2" ? L.scopeHTML(rows, sel, {}) : renderPaged(sel, mode);
+  $("#preview").innerHTML = renderPaged(sel, mode);
 }
 
 /* ---------- figures -> figMap (canvas raster, high-res) ---------- */
@@ -295,7 +306,7 @@ $("#dldocx").onclick = function () {
       var figMap = buildFigMap(sel);
       if (mode === "even") figMap["grid"] = { data: rasterize("grid", 1500) }; // fill-page grids aren't referenced by content rows
       var lineHeightPt = +$("#lineh").value * 0.75; // screen px (96dpi) -> pt
-      var padPages = computeOddWarmups(sel, mode);
+      var padPages = computePadPages(sel, mode);
       var doc = WBDOCX.buildDoc(rows, { scope: sel.scope, course: sel.course, unit: sel.unit, page: sel.page, figMap: figMap, options: { lineHeightPt: lineHeightPt }, pageMode: mode, padPages: padPages });
       docx.Packer.toBlob(doc).then(function (blob) {
         var a = document.createElement("a");

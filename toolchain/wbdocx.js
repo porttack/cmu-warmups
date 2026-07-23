@@ -153,8 +153,7 @@
       { before: 200, after: 60, bottom: true, bottomColor: THEME.accent, bottomSz: 12 });
   }
   function part2Bar() {
-    return para([run("PART 2 ", { bold: true, size: THEME.base }),
-                 run("\u2014 keep going if you finish early.", { color: "444444", size: THEME.base })],
+    return para([run("PART 2", { bold: true, size: THEME.base })],
       { before: 200, after: 80, shade: THEME.shade });
   }
   function codeBox(text) {
@@ -266,8 +265,7 @@
       out.push(sectionLabel("Vocabulary \u2014 write each in your own words"));
       sectionParas(vocab, figMap).forEach(function (p) { out.push(p); });
     }
-    out.push(para([new PB()]));                         // -> page 2
-    out.push(sectionLabel("Part 1 \u2014 core work"));
+    out.push(sectionLabel("Part 1"));
     sectionParas(w.part1, figMap).forEach(function (p) { out.push(p); });
     out.push(part2Bar());
     sectionParas(w.part2, figMap).forEach(function (p) { out.push(p); });

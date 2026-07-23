@@ -181,7 +181,7 @@
     var no = parseInt(w.no, 10) || 0;
     var ican = w.ican && w.ican.length ? w.ican : ["I can start today's warm-up.", "I can ask for help when stuck."];
     return [
-      { L: "A", kind: "pace", text: "Pace check — circle one:", opts: ["feeling good", "a bit distracted", "stuck — I could use help"] },
+      { L: "A", kind: "pace", text: "Pace check — circle one:", opts: ["feeling good", "a bit distracted", "stuck"] },
       { L: "B", kind: "ican", text: ican[0] || "" },
       { L: "C", kind: "ican", text: ican[1] || "" },
       { L: "D", kind: "reflect",
@@ -449,8 +449,8 @@
     var p1 = headerHTML(w) + stripHTML(w) +
       (vocab.length ? '<div class="seclabel">Vocabulary — write each in your own words</div>' +
         itemsHTML(vocab) : "");
-    var p2 = '<div class="seclabel">Part 1 — core work</div>' + itemsHTML(w.part1) +
-      '<div class="part2bar">PART 2 <em>— keep going if you finish early.</em></div>' +
+    var p2 = '<div class="seclabel">Part 1</div>' + itemsHTML(w.part1) +
+      '<div class="part2bar">PART 2</div>' +
       itemsHTML(w.part2);
     return '<section class="page" data-page="' + esc(w.page) + '">' + p1 + '</section>' +
            '<section class="page">' + p2 + "</section>";
@@ -517,7 +517,6 @@
 ".srow .sopt{white-space:nowrap;text-align:right}",
 ".seclabel{font-weight:700;margin:14px 0 4px;border-bottom:2px solid var(--accent);padding-bottom:2px}",
 ".part2bar{background:var(--shade);border-left:4px solid var(--accent);padding:5px 8px;font-weight:700;margin:14px 0 6px}",
-".part2bar em{font-weight:400;color:#444}",
 ".prompt{margin:8px 0}.ptext{margin-bottom:4px}",
 ".vocab{margin:6px 0}.vocab .term{font-weight:700}",
 ".ilabel{font-weight:700;margin:8px 0 2px}",

@@ -153,8 +153,7 @@
       { before: 200, after: 60, bottom: true, bottomColor: THEME.accent, bottomSz: 12 });
   }
   function part2Bar() {
-    return para([run("PART 2 ", { bold: true, size: THEME.base }),
-                 run("\u2014 keep going if you finish early.", { color: "444444", size: THEME.base })],
+    return para([run("PART 2", { bold: true, size: THEME.base })],
       { before: 200, after: 80, shade: THEME.shade });
   }
   function codeBox(text) {
@@ -273,7 +272,6 @@
 
   function warmupParas(w, figMap, opts) {
     opts = opts || {};
-    var pageMode = opts.pageMode || "2";
     var out = [];
     headerBlock(w).forEach(function (x) { out.push(x); });
     stripBlock(w).forEach(function (x) { out.push(x); });
@@ -282,10 +280,10 @@
       out.push(sectionLabel("Vocabulary \u2014 write each in your own words"));
       sectionParas(vocab, figMap).forEach(function (p) { out.push(p); });
     }
-    if (pageMode === "2") out.push(para([new PB()]));    // -> page 2 (fixed split)
-    // "even"/"any": no forced break here \u2014 Part 1/Part 2 flow continuously,
-    // may straddle a page on their own; only individual items stay atomic.
-    out.push(sectionLabel("Part 1 \u2014 core work"));
+    // No forced break here in any mode \u2014 Part 1/Part 2 flow continuously
+    // after vocab, may straddle a page on their own; only individual items
+    // stay atomic. "2" and "even" pad short warm-ups back up via opts.pad.
+    out.push(sectionLabel("Part 1"));
     sectionParas(w.part1, figMap).forEach(function (p) { out.push(p); });
     out.push(part2Bar());
     sectionParas(w.part2, figMap).forEach(function (p) { out.push(p); });
@@ -323,8 +321,8 @@
     ws.forEach(function (w) {
       out.push(para([new PB()]));
       var key = course + "|" + unit + "|" + w.page;
-      var pad = cfg.pageMode === "even" && !!(cfg.padPages && cfg.padPages[key]);
-      warmupParas(w, figMap, { pageMode: cfg.pageMode, pad: pad }).forEach(function (p) { out.push(p); });
+      var pad = (cfg.pageMode === "even" || cfg.pageMode === "2") && !!(cfg.padPages && cfg.padPages[key]);
+      warmupParas(w, figMap, { pad: pad }).forEach(function (p) { out.push(p); });
     });
     return out;
   }
@@ -346,7 +344,8 @@
     if (scope === "warmup") {
       var w = L.warmupFromRows(L.pageRows(rows, cfg.course, cfg.unit, cfg.page));
       var key = cfg.course + "|" + cfg.unit + "|" + w.page;
-      body = warmupParas(w, figMap, { pageMode: pageMode, pad: pageMode === "even" && !!padPages[key] });
+      var pad = (pageMode === "even" || pageMode === "2") && !!padPages[key];
+      body = warmupParas(w, figMap, { pad: pad });
     } else if (scope === "course") {
       body = []; var first = true;
       L.units(rows, cfg.course).forEach(function (u) {
