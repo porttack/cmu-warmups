@@ -247,7 +247,7 @@
 
   function figureSVG(spec) {
     var f = parseFigure(spec), C = f.canvas, step = 50;
-    var m = f.grid ? Math.round(C * 0.1) : 0; // margin reserved for axis numbers, outside the box
+    var m = f.grid ? Math.round(C * 0.17) : 0; // margin reserved for axis numbers, outside the box
     var s = '<svg viewBox="' + (-m) + ' ' + (-m) + ' ' + (C + m) + ' ' + (C + m) + '" xmlns="http://www.w3.org/2000/svg" width="100%" preserveAspectRatio="xMidYMid meet">';
     s += '<rect x="0" y="0" width="' + C + '" height="' + C + '" fill="#ffffff" stroke="#333" stroke-width="1.5"/>';
     if (f.grid) {
@@ -259,7 +259,7 @@
         s += '<line x1="0" y1="' + g + '" x2="' + C + '" y2="' + g + '" stroke="' + col + '" stroke-width="' + sw + '"/>';
       }
       // big numbers outside the box at every 100, so they still read once printed
-      var fs = Math.max(14, Math.round(C * 0.05)), lbl = Math.round(m * 0.5);
+      var fs = Math.max(16, Math.round(C * 0.06)), lbl = Math.round(fs * 0.7);
       for (var t = 100; t < C; t += 100) {
         s += '<text x="' + t + '" y="' + (-lbl) + '" font-size="' + fs + '" fill="#555" font-family="sans-serif" text-anchor="middle">' + t + '</text>';
         s += '<text x="' + (-lbl) + '" y="' + t + '" font-size="' + fs + '" fill="#555" font-family="sans-serif" text-anchor="end" dominant-baseline="middle">' + t + '</text>';
@@ -282,7 +282,7 @@
   // Draw the same figure onto a 2D canvas context scaled to `px` (browser + node-canvas)
   function drawFigure(ctx, spec, px) {
     var f = parseFigure(spec), C = f.canvas, step = 50;
-    var m = f.grid ? C * 0.1 : 0; // margin reserved for axis numbers, in canvas units
+    var m = f.grid ? C * 0.17 : 0; // margin reserved for axis numbers, in canvas units
     var k = px / (C + m), ox = m * k, oy = m * k;
     function X(x) { return ox + x * k; }
     function Y(y) { return oy + y * k; }
@@ -297,12 +297,12 @@
         ctx.beginPath(); ctx.moveTo(X(g), oy); ctx.lineTo(X(g), oy + C * k); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(ox, Y(g)); ctx.lineTo(ox + C * k, Y(g)); ctx.stroke();
       }
-      var fs = Math.max(14, C * 0.05) * k, gap = m * 0.5 * k;
+      var fs = Math.max(16, C * 0.06) * k, gap = fs * 0.7;
       ctx.fillStyle = "#555"; ctx.font = fs + "px sans-serif";
       ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
-      for (var t = 100; t < C; t += 100) { ctx.fillText(String(t), X(t), oy - gap * 0.4); }
+      for (var t = 100; t < C; t += 100) { ctx.fillText(String(t), X(t), oy - gap); }
       ctx.textAlign = "right"; ctx.textBaseline = "middle";
-      for (var t2 = 100; t2 < C; t2 += 100) { ctx.fillText(String(t2), ox - gap * 0.4, Y(t2)); }
+      for (var t2 = 100; t2 < C; t2 += 100) { ctx.fillText(String(t2), ox - gap, Y(t2)); }
       ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
     }
     var textFs = Math.max(14, C * 0.045) * k;
