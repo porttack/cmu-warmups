@@ -285,3 +285,317 @@ csN-demo,1,25,w25,meta,2,ican,I can draw lines between two columns,,
 csN-demo,1,25,w25,part1,3,p,MATCH — draw a line from each term to its meaning.,n=0,
 csN-demo,1,25,w25,part1,4,match,"origin :: how puffy or spiky a star is
 roundness :: (0, 0) — the top-left corner",,
+cs0,0,1,w1,meta,0,topic,Coordinate Battleship,,
+cs0,0,1,w1,meta,1,ican,Grids and graphs make me feel,,
+cs0,0,1,w1,meta,2,ican,I can follow a class routine,,
+cs0,0,1,w1,meta,3,reflect,One thing I hope we make this semester:,,
+cs0,0,1,w1,meta,4,checkin,Check-in: one word for how today is going:,,
+cs0,0,1,w1,part1,5,note,"A point is always written (x, y) — parentheses, x first. x counts ACROSS from the left; y counts DOWN from the top. (0, 0) is the TOP-LEFT corner.",,
+cs0,0,1,w1,part1,6,label,Coordinate Battleship — with your partner,,
+cs0,0,1,w1,part1,7,p,"Place 3 ships on MY SHIPS — each is 3 dots in a row on grid crossings. Take turns calling shots as (x, y). Mark hits X and misses O on MY SHOTS. Sink all 3 to win.",n=0,
+cs0,0,1,w1,part1,8,p,"Before you play: label all four corners of MY SHIPS, written the (x, y) way.",n=0,
+cs0,0,1,w1,part1,9,label,MY SHIPS                                    MY SHOTS,,
+cs0,0,1,w1,part1,10,figure,,w=230;cols=2,grid
+cs0,0,1,w1,part1,11,figure,,w=230;cols=2,grid
+cs0,0,1,w1,part2,12,p,"Put a dot at (200, 200). Why is that the exact middle of a 400-by-400 canvas?",n=1,
+cs0,0,1,w1,part2,13,p,"Label each of your 9 ship dots with its coordinates — write them here, the (x, y) way:",n=0,
+cs0,0,1,w1,part2,14,lines,,n=3,
+cs0,0,1,w1,part2,15,p,"Which of your shots landed closest to the origin?  ( ____ , ____ )",n=0,
+cs0,0,2,w2,meta,0,topic,Program Your Teacher,,
+cs0,0,2,w2,meta,1,ican,I understand our daily routine (grab workbook → START HERE → warm-up → mark → classwork → put away),,
+cs0,0,2,w2,meta,2,ican,"I can plot an (x, y) point",,
+cs0,0,2,w2,meta,3,reflect,Battleship was,,
+cs0,0,2,w2,meta,4,checkin,Check-in — small win: one thing that went well since yesterday:,,
+cs0,0,2,w2,part1,5,p,"Dot at (100, 300), dot at (300, 100) on the mini-grid. Circle the LOWER one.",n=0,
+cs0,0,2,w2,part1,6,figure,,w=150,grid=off
+cs0,0,2,w2,part1,7,p,"Which corner of the canvas is (400, 0)?",n=1,
+cs0,0,2,w2,part1,8,p,"PROGRAM YOUR TEACHER — write step-by-step instructions to draw this house. Your teacher follows them **exactly** — no guessing, no fixing.",n=0,
+cs0,0,2,w2,part1,9,figure,,w=160,"grid=off; rect 130,190,140,140; line 120,190,200,110; line 200,110,280,190; rect 155,215,45,45; rect 225,255,40,75; line 155,237,200,237; line 177,215,177,260"
+cs0,0,2,w2,part1,10,lines,,n=5,
+cs0,0,2,w2,part2,11,p,After watching — two fixes we made:,n=2,
+cs0,0,2,w2,part2,12,p,Vocabulary — your own words:,n=0,
+cs0,0,2,w2,part2,13,p,"**pseudo-code** (instructions written for people, not the computer):",n=2,
+cs0,0,2,w2,part2,14,p,**syntax** (the exact spelling-and-punctuation rules code must follow):,n=2,
+cs0,0,2,w2,part2,15,p,**bug:**,n=2,
+cs0,0,2,w2,part2,16,p,Write instructions to draw the first letter of your name using only STRAIGHT LINES — 6 steps or fewer.,n=3,
+cs0,1,101,w101,meta,0,topic,The Canvas (1.1),,
+cs0,1,101,w101,meta,1,ican,I can write exact instructions in order,,
+cs0,1,101,w101,meta,2,ican,I can spot a bug in instructions,,
+cs0,1,101,w101,meta,3,reflect,One thing I remember about the canvas:,,
+cs0,1,101,w101,meta,4,checkin,Check-in — battery: my mental battery is at about ____ % because ____,,
+cs0,1,101,w101,part1,5,p,Circle the labeled point closest to the BOTTOM-RIGHT corner:,n=0,
+cs0,1,101,w101,part1,6,figure,,w=200,"grid; dot 330,330; text 344,332,A; dot 120,110; text 96,112,B; dot 255,60; text 268,56,C; dot 90,300; text 66,302,D"
+cs0,1,101,w101,part1,7,p,"On the big grid: label all four corners AND the center. Then plot and label (100, 100)  (300, 200)  (200, 350).",n=0,
+cs0,1,101,w101,part1,8,figure,,w=230,grid
+cs0,1,101,w101,part1,9,p,"A dot is at (300, 100).  Top or bottom half? ____   Left or right half? ____",n=0,
+cs0,1,101,w101,part2,10,p,"Vocabulary — real definitions, your own words:",n=0,
+cs0,1,101,w101,part2,11,p,**canvas:**,n=2,
+cs0,1,101,w101,part2,12,p,**origin:**,n=2,
+cs0,1,101,w101,part2,13,p,"No gridlines — ESTIMATE:  D ( ____ , ____ )   E ( ____ , ____ )   F ( ____ , ____ )",n=0,
+cs0,1,101,w101,part2,14,figure,,w=200,"grid=off; dot 150,110; text 164,104,D; dot 60,300; text 40,302,F; dot 350,245; text 322,246,E"
+cs0,1,101,w101,part2,15,p,"Mystery picture — plot these in order on the mini-grid, connecting as you go: (100,350) (100,200) (200,100) (300,200) (300,350) (100,350).  It's a ____",n=0,
+cs0,1,101,w101,part2,16,figure,,w=150,grid=off
+cs0,1,102,w102,meta,0,topic,Circle() (1.1),,
+cs0,1,102,w102,meta,1,ican,I can label the canvas corners,,
+cs0,1,102,w102,meta,2,ican,I can plot points on the canvas,,
+cs0,1,102,w102,meta,3,reflect,Logging in went,,
+cs0,1,102,w102,meta,4,checkin,"Check-in — weather report, my brain today is (sunny / cloudy / foggy / stormy):",,
+cs0,1,102,w102,part1,5,p,Label the job of each number. Word bank (out of order): **centerY  radius  centerX**,n=0,
+cs0,1,102,w102,part1,6,code,"Circle( 200 , 200 , 50 )",,
+cs0,1,102,w102,part1,7,lines,,n=1,
+cs0,1,102,w102,part1,8,p,"PREDICT — sketch BOTH on one grid: `Circle(100, 100, 50)` and `Circle(300, 300, 100)`",n=0,
+cs0,1,102,w102,part1,9,figure,,w=230,grid
+cs0,1,102,w102,part2,10,p,WRITE THE CODE for this picture (arrow reaches the edge — read the grid for the radius):,n=0,
+cs0,1,102,w102,part2,11,figure,,w=200,"grid; circle 200,200,100"
+cs0,1,102,w102,part2,12,lines,,n=1,
+cs0,1,102,w102,part2,13,p,"PREDICT: `Circle(200,200,80)` then `Circle(200,200,40, fill='white')` — sketch or describe:",n=2,
+cs0,1,102,w102,part2,14,p,"SNOWMAN — 3 circles that TOUCH, not overlap. Sketch on the mini-grid, then write the code. (If the bottom radius is 80 and the middle is 55, how far apart are the centers?)",n=0,
+cs0,1,102,w102,part2,15,figure,,w=160,grid=off
+cs0,1,102,w102,part2,16,lines,,n=3,
+cs0,1,103,w103,meta,0,topic,Colors & the Inspector (1.1),,
+cs0,1,103,w103,meta,1,ican,I can sketch a circle from its code,,
+cs0,1,103,w103,meta,2,ican,I can write Circle() from a picture,,
+cs0,1,103,w103,meta,3,reflect,One thing I drew last class:,,
+cs0,1,103,w103,meta,4,checkin,Check-in — speed bump: one thing competing for my attention today:,,
+cs0,1,103,w103,part1,5,p,"Coloring a shape: the color goes AFTER the three numbers, in quotes. FIND THE ERROR: `Circle(200, 200, 50, fill=blue)`  Fix:",n=1,
+cs0,1,103,w103,part1,6,p,"FIND THE ERROR: `Circle(200, fill='red', 200, 50)`  What's wrong?",n=1,
+cs0,1,103,w103,part1,7,p,"DRAW ORDER — PREDICT: `Circle(150, 200, 80, fill='blue')` then `Circle(250, 200, 80, fill='red')`. They overlap — which color is ON TOP, and why?",n=2,
+cs0,1,103,w103,part2,8,p,The line `app.background = 'skyBlue'` colors the whole background. Where does it go in a program — top or bottom — and why?,n=2,
+cs0,1,103,w103,part2,9,p,"THE INSPECTOR says a circle has center (175, 320), radius 70, color 'limeGreen'. WRITE ITS CODE:",n=1,
+cs0,1,103,w103,part2,10,p,Vocabulary:,n=0,
+cs0,1,103,w103,part2,11,p,**fill:**,n=2,
+cs0,1,103,w103,part2,12,p,**inspector:**,n=2,
+cs0,1,103,w103,part2,13,p,LANDSCAPE IN WORDS — describe what this program draws:,n=0,
+cs0,1,103,w103,part2,14,code,"app.background = 'skyBlue'
+Circle(340, 60, 40, fill='yellow')
+Circle(200, 550, 250, fill='green')",,
+cs0,1,103,w103,part2,15,lines,,n=2,
+cs0,1,104,w104,meta,0,topic,Errors (1.1),,
+cs0,1,104,w104,meta,1,ican,I can color a shape with fill,,
+cs0,1,104,w104,meta,2,ican,I can use the Inspector to read a shape's numbers,,
+cs0,1,104,w104,meta,3,reflect,My landscape had,,
+cs0,1,104,w104,meta,4,checkin,Check-in: someone in this class I could ask for help:,,
+cs0,1,104,w104,part1,5,p,"FIND THE ERROR: `circle(200, 200, 50)`  Fix:",n=1,
+cs0,1,104,w104,part1,6,p,"FIND THE ERROR: `Circle(200 200, 50)`  Fix:",n=1,
+cs0,1,104,w104,part1,7,p,"FIND THE ERROR: `Circle(200, 200, 50`  Fix:",n=1,
+cs0,1,104,w104,part1,8,p,"PREDICT — sketch `Circle(300, 100, 50)` on the mini-grid.",n=0,
+cs0,1,104,w104,part1,9,figure,,w=150,grid=off
+cs0,1,104,w104,part2,10,p,GRADE THIS PROGRAM like a teacher — it has THREE bugs. Circle each and write the fix beside it. (Careful: one line is correct.),n=0,
+cs0,1,104,w104,part2,11,code,"1  Circle(100, 100, 50
+2  circle(300, 100, 50)
+3  Circle(200, 300, 25)
+4  Circle(300 300, 40)",,
+cs0,1,104,w104,part2,12,lines,,n=3,
+cs0,1,104,w104,part2,13,p,Write a program (2–3 lines) that draws a pair of eyes:,n=3,
+cs0,1,105,w105,meta,0,topic,Stars (1.2),,
+cs0,1,105,w105,meta,1,ican,I can fix a missing comma or parenthesis,,
+cs0,1,105,w105,meta,2,ican,I can earn points on exercises by myself,,
+cs0,1,105,w105,meta,3,reflect,The hardest bug so far:,,
+cs0,1,105,w105,meta,4,checkin,Check-in: asking questions in class feels (easy / okay / scary):,,
+cs0,1,105,w105,part1,5,p,"A Star is a Circle plus one more number. The 5 in `Star(200, 200, 80, 5)` is the ____",n=1,
+cs0,1,105,w105,part1,6,p,MATCH each code to its star (write the letter). Count the points!,n=0,
+cs0,1,105,w105,part1,7,figure,,w=120;cols=4,"star 200,200,120,6; text 30,55,A"
+cs0,1,105,w105,part1,8,figure,,w=120;cols=4,"star 200,200,120,3; text 30,55,B"
+cs0,1,105,w105,part1,9,figure,,w=120;cols=4,"star 200,200,120,8; text 30,55,C"
+cs0,1,105,w105,part1,10,figure,,w=120;cols=4,"star 200,200,120,5; text 30,55,D"
+cs0,1,105,w105,part1,11,code,"___ Star(200,200,80,3)     ___ Star(200,200,80,5)     ___ Star(200,200,80,6)     ___ Star(200,200,80,8)",,
+cs0,1,105,w105,part1,12,p,"FIND THE ERROR: `Star(200, 350, 50, 2)`  Why does it break?",n=1,
+cs0,1,105,w105,part2,13,p,"Roundness dial: same star, roundness 90 vs roundness 10 — which is PUFFY? ____  Sketch both:",n=0,
+cs0,1,105,w105,part2,14,label,roundness=90                              roundness=10,,
+cs0,1,105,w105,part2,15,figure,,w=150;cols=2,grid=off
+cs0,1,105,w105,part2,16,figure,,w=150;cols=2,grid=off
+cs0,1,105,w105,part2,17,p,DESIGN A FLAG using at least one Star. Sketch in the frame; code below.,n=0,
+cs0,1,105,w105,part2,18,figure,,w=240,grid=off
+cs0,1,105,w105,part2,19,lines,,n=2,
+cs0,1,106,w106,meta,0,topic,Gradients (1.2),,
+cs0,1,106,w106,meta,1,ican,I can match star code to its picture,,
+cs0,1,106,w106,meta,2,ican,I can use roundness,,
+cs0,1,106,w106,meta,3,reflect,Stars are,,
+cs0,1,106,w106,meta,4,checkin,Check-in: one way I could help a classmate today:,,
+cs0,1,106,w106,part1,5,p,"Count the parentheses: `Circle(100, 200, 100, fill=gradient('red', 'blue'`  How many `)` does this line still need?",n=1,
+cs0,1,106,w106,part1,6,p,"SHADE with your pencil (dark = color 1). square: `gradient('black','white', start='top')`   circle: `gradient('black','white')` (no start — where does color 1 live?)",n=0,
+cs0,1,106,w106,part1,7,label,square                                              circle,,
+cs0,1,106,w106,part1,8,figure,,w=150;cols=2,"grid=off; rect 90,120,220,220"
+cs0,1,106,w106,part1,9,figure,,w=150;cols=2,"grid=off; circle 200,200,110"
+cs0,1,106,w106,part1,10,p,CMU's start words — all eight: 'top' 'bottom' 'left' 'right' 'left-top' 'right-top' 'left-bottom' 'right-bottom'  _(diagonal pairs like 'top-left' count the same)_,n=0,
+cs0,1,106,w106,part1,11,p,"COLOR-1 HUNT: a circle is darkest on its LEFT edge, fading right. Its start is:  start='____'",n=0,
+cs0,1,106,w106,part2,12,p,"Write one line: a circle at the center, radius 150, filled with a gradient of two colors you choose, starting at the bottom.",n=1,
+cs0,1,106,w106,part2,13,p,"NIGHT SKY — gradient background + 5 stars with different sizes, points, roundness. Sketch here; write the code under the sketch. Bonus: one star gets a gradient fill.",n=0,
+cs0,1,106,w106,part2,14,figure,,w=230,grid
+cs0,1,107,w107,meta,0,topic,Bug Hunt (1.2),,
+cs0,1,107,w107,meta,1,ican,I can shade a gradient's direction from its code,,
+cs0,1,107,w107,meta,2,ican,"I can write gradient('a','b') with quotes and parens",,
+cs0,1,107,w107,meta,3,reflect,Gradients are,,
+cs0,1,107,w107,meta,4,checkin,Check-in: one thing I figured out this week:,,
+cs0,1,107,w107,part1,5,note,"A whole page of broken code — circle every bug, write every fix.",,
+cs0,1,107,w107,part1,6,p,"`circle(200, 200, 50)`  Fix:",n=1,
+cs0,1,107,w107,part1,7,p,"`Circle(200 200, 50)`  Fix:",n=1,
+cs0,1,107,w107,part1,8,p,"`Star(300, 300, 50)`  Fix:",n=1,
+cs0,1,107,w107,part1,9,p,"`Circle(100, 100, 50, fill=red)`  Fix:",n=1,
+cs0,1,107,w107,part1,10,p,"`Star(200, 350, 50, 2)`  Why does it break?",n=1,
+cs0,1,107,w107,part2,11,p,"GRADE THIS PROGRAM — FOUR bugs. Circle each, fix beside it. (One line is correct!)",n=0,
+cs0,1,107,w107,part2,12,code,"1  Circle(100, 100, 50
+2  star(300, 100, 50, 5)
+3  Circle(200, 300, 25, fill=blue)
+4  Star(100, 300, 40, 5, roundness=80)
+5  Star(300, 300, 40, 2)",,
+cs0,1,107,w107,part2,13,lines,,n=4,
+cs0,1,107,w107,part2,14,p,This program should draw a bullseye but draws nonsense. Rewrite it correctly:,n=0,
+cs0,1,107,w107,part2,15,code,"Circle(200, 200, 40)  Circle(200, 200, 80, fill='white')  circle(200, 200, 120)",,
+cs0,1,107,w107,part2,16,lines,,n=3,
+cs0,1,108,w108,meta,0,topic,Checkpoint (1.1–1.2),,
+cs0,1,108,w108,meta,1,ican,I can finish my point targets without reminders,,
+cs0,1,108,w108,meta,2,ican,I can use the Color-1 Hunt on a gradient,,
+cs0,1,108,w108,meta,3,reflect,So far this unit I am proud of,,
+cs0,1,108,w108,meta,4,checkin,Check-in: today I want to leave class having,,
+cs0,1,108,w108,part1,5,p,"Plot (350, 50) and (50, 350) on the mini-grid. Circle the LOWER one.",n=0,
+cs0,1,108,w108,part1,6,figure,,w=150,grid=off
+cs0,1,108,w108,part1,7,p,radius means:,n=1,
+cs0,1,108,w108,part1,8,p,"PREDICT (describe): `Circle(200, 200, 150)`",n=1,
+cs0,1,108,w108,part1,9,p,"PREDICT: `Star(100, 300, 50, 5)` — nearest corner of the canvas?",n=1,
+cs0,1,108,w108,part1,10,p,"FIND THE ERROR: `Star(200, 200, 50)`  Fix:",n=1,
+cs0,1,108,w108,part2,11,p,MATCH — draw a line from each term to its meaning:,n=0,
+cs0,1,108,w108,part2,12,match,"origin :: a fill that fades from one color to another
+radius :: how puffy or spiky a star is (0–100)
+points :: distance from a circle's center to its edge
+roundness :: a mistake in a program
+gradient :: the spikes a star has
+bug :: (0, 0) — the top-left corner",,
+cs0,1,108,w108,part2,13,p,UNSCRAMBLE:  sradiu ____   nigiro ____   tgnaredi ____,n=0,
+cs0,1,109,w109,meta,0,topic,Review (1.3),,
+cs0,1,109,w109,meta,1,ican,I can find and fix bugs on my own,,
+cs0,1,109,w109,meta,2,ican,I can describe what a program draws from its code,,
+cs0,1,109,w109,meta,3,reflect,The bug hunt was,,
+cs0,1,109,w109,meta,4,checkin,"Check-in — weather report, my brain today is (sunny / cloudy / foggy / stormy):",,
+cs0,1,109,w109,part1,5,p,DESCRIBE IN WORDS what this program draws (no sketching):,n=0,
+cs0,1,109,w109,part1,6,code,"Rect(0, 0, 400, 400, fill=gradient('black', 'white', start='top'))
+Star(200, 200, 100, 5, fill='white')",,
+cs0,1,109,w109,part1,7,lines,,n=2,
+cs0,1,109,w109,part1,8,p,COLOR-1 HUNT ×2:  darkest at TOP-LEFT → start='____'   darkest in the CENTER → start needed?,n=1,
+cs0,1,109,w109,part1,9,p,SPEED ROUND: a star drawn from the center that touches all four edges of the canvas has radius ____,n=0,
+cs0,1,109,w109,part2,10,p,Vocabulary — real definitions:,n=0,
+cs0,1,109,w109,part2,11,p,**roundness:**,n=2,
+cs0,1,109,w109,part2,12,p,**gradient:**,n=2,
+cs0,1,109,w109,part2,13,p,"PREDICT — sketch the whole program from Part 1 #1 on the grid, shading the gradient:",n=0,
+cs0,1,109,w109,part2,14,figure,,w=230,grid
+cs0,1,109,w109,part2,15,p,Write a 2-line program: gradient sky + one star of your design.,n=2,
+cs0,1,110,w110,meta,0,topic,Rectangles & Opacity (1.3),,
+cs0,1,110,w110,meta,1,ican,I can name a gradient's start from a picture,,
+cs0,1,110,w110,meta,2,ican,I can predict a program before it runs,,
+cs0,1,110,w110,meta,3,reflect,Rectangles seem,,
+cs0,1,110,w110,meta,4,checkin,Check-in — battery: my mental battery is at about ____ % because ____,,
+cs0,1,110,w110,part1,5,p,"Rectangles anchor at their LEFT-TOP corner, not their center. Label the jobs. Word bank (out of order): **height  left  width  top**",n=0,
+cs0,1,110,w110,part1,6,code,"Rect( 100 , 150 , 200 , 100 )",,
+cs0,1,110,w110,part1,7,lines,,n=1,
+cs0,1,110,w110,part1,8,p,WRITE THE CODE for this picture (the square marks the anchor corner):,n=0,
+cs0,1,110,w110,part1,9,figure,,w=200,"grid; rect 90,90,170,120,150"
+cs0,1,110,w110,part1,10,lines,,n=1,
+cs0,1,110,w110,part1,11,p,"CONVERSION: a rectangle 100 wide, 60 tall, CENTERED at (200, 200).  left = ____  top = ____",n=0,
+cs0,1,110,w110,part2,12,p,"EDGES: `Rect(50, 80, 200, 100)`  right edge at x = ____   bottom edge at y = ____",n=0,
+cs0,1,110,w110,part2,13,p,"PREDICT: `Rect(100,100,200,200, fill='black')` then `Circle(200,200,80, fill='white', opacity=50)` — sketch or describe:",n=2,
+cs0,1,110,w110,part2,14,p,ROBOT — design a robot entirely from Rects on the grid. Compute every left/top from your sketch. Write the code for at least three rectangles.,n=0,
+cs0,1,110,w110,part2,15,figure,,w=230,grid
+cs0,1,110,w110,part2,16,lines,,n=3,
+cs0,1,111,w111,meta,0,topic,"Ovals, Lines & Labels (1.4)",,
+cs0,1,111,w111,meta,1,ican,I can convert a centered rectangle to left and top,,
+cs0,1,111,w111,meta,2,ican,I can compute a rectangle's right and bottom edges,,
+cs0,1,111,w111,meta,3,reflect,Opacity is,,
+cs0,1,111,w111,meta,4,checkin,Check-in: one thing that went well this week:,,
+cs0,1,111,w111,part1,5,note,"THREE NEW SHAPES: `Oval(centerX, centerY, width, height)` — anchored at its CENTER, like Circle. `Line(x1, y1, x2, y2)` — two endpoints. `Label('text', centerX, centerY)` — words on the canvas.",,
+cs0,1,111,w111,part1,6,p,Label the job of each number. Word bank (out of order): **height  centerX  width  centerY**,n=0,
+cs0,1,111,w111,part1,7,code,"Oval( 200 , 200 , 300 , 100 )",,
+cs0,1,111,w111,part1,8,lines,,n=1,
+cs0,1,111,w111,part1,9,p,"PREDICT — sketch BOTH on the grid: `Line(0, 0, 400, 400)` and `Line(400, 0, 0, 400)`. Together they make a ____",n=0,
+cs0,1,111,w111,part1,10,figure,,w=220,grid
+cs0,1,111,w111,part2,11,p,"TRICKY — write the Oval call that draws exactly the same shape as `Circle(200, 200, 50)`. (Careful: Circle uses radius, Oval uses width and height!)",n=1,
+cs0,1,111,w111,part2,12,p,"WRITE THE CODE: the word Hi centered at (200, 350), with size=30",n=1,
+cs0,1,111,w111,part2,13,p,Complete the table:,n=0,
+cs0,1,111,w111,part2,14,table,"Shape|Anchored at…|Numbers it needs
+Circle|its center|centerX, centerY, radius
+Oval||
+Line|its two endpoints|
+Label||",,
+cs0,1,111,w111,part2,15,p,Write the code to draw the first letter of your name using THREE Lines (sketch on the mini-grid first):,n=0,
+cs0,1,111,w111,part2,16,figure,,w=150,grid=off
+cs0,1,111,w111,part2,17,lines,,n=3,
+cs0,1,112,w112,meta,0,topic,Properties Galore (1.4),,
+cs0,1,112,w112,meta,1,ican,I can draw an Oval given its width and height,,
+cs0,1,112,w112,meta,2,ican,I can draw a Line between two points,,
+cs0,1,112,w112,meta,3,reflect,Labels are,,
+cs0,1,112,w112,meta,4,checkin,Check-in — battery: my mental battery is at about ____ % because ____,,
+cs0,1,112,w112,part1,5,note,"THE QUOTES RULE: color words and text get quotes ('red', 'Hi'). Numbers never do (borderWidth=10, opacity=50, rotateAngle=45).",,
+cs0,1,112,w112,part1,6,p,"FIND THE ERROR: `Circle(200, 200, 50, border=blue)`  Fix:",n=1,
+cs0,1,112,w112,part1,7,p,"FIND THE ERROR: `Rect(50, 50, 100, 100, borderWidth='10')`  Fix:",n=1,
+cs0,1,112,w112,part1,8,p,MATCH — draw a line from each property to what it changes:,n=0,
+cs0,1,112,w112,part1,9,match,"border :: spins the shape by some degrees
+borderWidth :: how see-through the shape is (0–100)
+opacity :: the color of the shape's outline
+dashes :: makes the outline a dotted line
+rotateAngle :: how thick the outline is",,
+cs0,1,112,w112,part2,10,p,"PREDICT: `Rect(150, 150, 100, 100, rotateAngle=45)` — what shape does it look like now?",n=1,
+cs0,1,112,w112,part2,11,p,"WRITE THE CODE: a circle at (200, 200), radius 80, white fill, red border, borderWidth 10.",n=1,
+cs0,1,112,w112,part2,12,p,"ONE SHAPE, THREE WAYS — restyle `Rect(100, 100, 200, 100)` two more times using at least two properties each. Make them as different as you can.",n=2,
+cs0,1,112,w112,part2,13,p,"Two circles overlap. One has opacity=25, the other opacity=75. Which is MORE see-through? ____",n=0,
+cs0,1,113,w113,meta,0,topic,Bug Hunt II (1.4),,
+cs0,1,113,w113,meta,1,ican,I can style a shape with border and borderWidth,,
+cs0,1,113,w113,meta,2,ican,I can rotate a shape with rotateAngle,,
+cs0,1,113,w113,meta,3,reflect,Properties are,,
+cs0,1,113,w113,meta,4,checkin,"Check-in: someone I helped, or who helped me, this week:",,
+cs0,1,113,w113,part1,5,note,"Circle every bug, write every fix.",,
+cs0,1,113,w113,part1,6,p,"`Oval(200, 200, 300)`  Fix:",n=1,
+cs0,1,113,w113,part1,7,p,"`Line(100, 100, 300)`  Fix:",n=1,
+cs0,1,113,w113,part1,8,p,"`Label(Hello, 200, 50)`  Fix:",n=1,
+cs0,1,113,w113,part1,9,p,"`Star(200, 200, 60, 5, roundness=150)`  What's wrong?",n=1,
+cs0,1,113,w113,part1,10,p,"`Rect(50, 50, 100, 100, opacity='50')`  Fix:",n=1,
+cs0,1,113,w113,part2,11,p,"GRADE THIS PROGRAM — FOUR bugs. Circle each, fix beside it. (One line is correct!)",n=0,
+cs0,1,113,w113,part2,12,code,"1  Oval(200, 100, 150, 80
+2  Line(0, 200, 400 200)
+3  Label('My Art', 200, 30, size=25)
+4  circle(300, 300, 40, border='red')
+5  Rect(50, 300, 80, 60, rotateAngle=45')",,
+cs0,1,113,w113,part2,13,lines,,n=4,
+cs0,1,113,w113,part2,14,p,"This program should write your name over a dashed box, but it's scrambled and broken. Rewrite it correctly:",n=0,
+cs0,1,113,w113,part2,15,code,"Label(Sam, 200, 200)  Rect(100, 150, 200, 100, dashes=true",,
+cs0,1,113,w113,part2,16,lines,,n=2,
+cs0,1,113,w113,part2,17,p,Invent your own find-the-error line and trade with a neighbor:,n=1,
+cs0,1,114,w114,meta,0,topic,Reading a Real Program (1.5),,
+cs0,1,114,w114,meta,1,ican,I can use properties without the quotes rule tripping me,,
+cs0,1,114,w114,meta,2,ican,I can choose the right shape for a job (Oval vs Circle vs Rect),,
+cs0,1,114,w114,meta,3,reflect,Bug Hunt II was,,
+cs0,1,114,w114,meta,4,checkin,Check-in: today I want to leave class having,,
+cs0,1,114,w114,part1,5,note,Today's project builds one big picture from many small shapes — this page is practice reading one.,,
+cs0,1,114,w114,part1,6,p,"READ THIS WHOLE PROGRAM, then answer below — no sketching needed:",n=0,
+cs0,1,114,w114,part1,7,code,"app.background = 'lightCyan'
+Oval(200, 260, 220, 140, fill='pink')
+Circle(200, 140, 70, fill='pink')
+Circle(175, 130, 10, fill='black')
+Label('my pet', 200, 380, size=24)",,
+cs0,1,114,w114,part1,8,p,How many shapes does it draw (don't count the background)? ____   What is the black circle probably drawing?,n=1,
+cs0,1,114,w114,part1,9,p,"The black circle sits ON TOP of the pink circle. What made that happen — its size, its color, or its place in the code?",n=1,
+cs0,1,114,w114,part1,10,p,"If you wanted the big oval BEHIND everything, where must its line go? ____",n=0,
+cs0,1,114,w114,part2,11,label,Plan like the project,,
+cs0,1,114,w114,part2,12,p,"SKETCH a simple animal face on the grid using ovals, circles, and lines.",n=0,
+cs0,1,114,w114,part2,13,figure,,w=220,grid
+cs0,1,114,w114,part2,14,p,"List your shapes in the order they must be coded — back first, front last:",n=0,
+cs0,1,114,w114,part2,15,lines,,n=4,
+cs0,1,114,w114,part2,16,p,Write the first TWO lines of your animal's code:,n=2,
+cs0,1,115,w115,meta,0,topic,Unit 1 Finisher (1.5),,
+cs0,1,115,w115,meta,1,ican,I can read a whole program and say what it draws,,
+cs0,1,115,w115,meta,2,ican,I can list shapes in back-to-front order,,
+cs0,1,115,w115,meta,3,reflect,The project is going,,
+cs0,1,115,w115,meta,4,checkin,Check-in: one word for how Unit 1 went:,,
+cs0,1,115,w115,part1,5,label,Speed round — all of Unit 1,,
+cs0,1,115,w115,part1,6,p,"CONVERSION: a rectangle 80 wide, 40 tall, CENTERED at (300, 100).  left = ____  top = ____",n=0,
+cs0,1,115,w115,part1,7,p,COLOR-1 HUNT: a shape darkest at its BOTTOM edge → start='____',n=0,
+cs0,1,115,w115,part1,8,p,"PREDICT — sketch `Oval(200, 200, 300, 100)` on the mini-grid:",n=0,
+cs0,1,115,w115,part1,9,figure,,w=150,grid=off
+cs0,1,115,w115,part1,10,p,"FIND THE ERROR: `Label('Done!', 200, 200, size='40')`  Fix:",n=1,
+cs0,1,115,w115,part2,11,p,MATCH — draw a line from each term to its meaning:,n=0,
+cs0,1,115,w115,part2,12,match,"Oval :: words drawn on the canvas
+Line :: a shape stretched by width and height
+Label :: spins a shape by degrees
+border :: drawn between two endpoints
+opacity :: the outline color of a shape
+rotateAngle :: how see-through a shape is",,
+cs0,1,115,w115,part2,13,p,Unit 1 is nearly done. Three things I can build now that I couldn't in August:,n=0,
+cs0,1,115,w115,part2,14,lines,,n=3,
